@@ -1,0 +1,57 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta http-equiv="Expires" content="86400"/>	
+
+	
+	<title>
+		<%block name="title">
+			Seedfield Songs
+		</%block>
+	</title>
+	<link rel="stylesheet" href="songlists.css">
+	
+</head>
+<body>
+    <h1>${title()}</h1>
+  
+    <h2>What's here</h2>
+    <p>You can see the songs we've sung by Date, by Song name or by when the song was New, just click on the links below:</p>
+        
+			<%def name="headerLink(text,href)">
+				&nbsp;
+				<span class="clickable big">
+					<a href="${href}">${text}</a>
+				</span>
+			</%def>
+			% for linktext in linksOnHomepage.keys():
+				${headerLink(linktext,links[linksOnHomepage[linktext]])}
+			% endfor
+	
+	<p>When you see a number under "In the last", if you move your mouse over it or tap it, you'll get a list of when it's been used. The pages are quite slow to load because there's a lots of data on each page.</p>
+
+    <p>These pages were created on ${today.isoformat()}.
+    Ask Andrew to update the pages if they're out of date!</p>
+	
+	<h2>What's planned</h2>
+	<ul>
+		<li>Put the book number next to the song number</li>
+		<li>Allow you to click a song title to see the song text, possibly with the chords and other details omitted. Use password protection for this if its online.</li>
+	</ul>
+
+	<h2>What's done now</h2>
+	<ul>
+		<li>There's now a list of new songs that aren't in Songs of Fellowship.</li>
+		<li>Also you can just show December songs in case you're looking for Christmas songs.</li>
+		<li>Most of the missing services from 2012-2015 are now in, having transcribed an awful lot of orders of services I've hoarded in Word into OpenSong.</li>
+		<li>It's now sortable by how often the songs have been used.</li>
+		<li>The program now automatically translates songs without numbers into the same song in Songs of Fellowship if it's there. Notable exceptions are when there are different versions of the song.</li>
+		<li>It now recognises Hymns&Psalms numbers as numbers.</li>
+		<li>Separate out the numbers from the titles.</li>
+		<li>Allow you to see all songs, even those we haven't used when you sort by songs.</li>
+		<li>I've put it online - <a href="http://seedfieldsongs.orgfree.com/">https://seedfieldsongs.orgfree.com/</a></li>
+	</ul>
+
+</body>
+</html>

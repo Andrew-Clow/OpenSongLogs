@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta http-equiv="Expires" content="86400"/>	
+
+	
+	<title>
+		<%block name="title">
+			Seedfield Songs With Lyrics
+		</%block>
+	</title>
+	<link rel="stylesheet" href="../songlists.css">
+	
+</head>
+<body>
+    <h1>${title()}</h1>
+  
+    <h2>What's here</h2>
+    <p>Here are a few pages featuring song lyrics that I've found useful.</p>
+        
+			<%def name="headerLink(text,href)">
+				&nbsp;
+				<span class="clickable big">
+					<a href="${href}">${text}</a>
+				</span>
+			</%def>
+			% for linktext in linksOnHomepage.keys():
+				${headerLink(linktext,links[linksOnHomepage[linktext]])}
+			% endfor
+	
+	<p>The pages are quite slow to load because there's a lots of data on each page.</p>
+
+    <p>These pages were created on ${today.isoformat()}.
+    Ask Andrew to update the pages if they're out of date!</p>
+	
+	<h2>What's planned</h2>
+	<ul>
+		<li>Bring in all the content from the main pages, but with links to the text of each song.</li>
+	</ul>
+
+	<h2>What's done now</h2>
+	<ul>
+		<li>Password protection is up and running.</li>
+	</ul>
+
+</body>
+</html>

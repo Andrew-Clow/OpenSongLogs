@@ -1,0 +1,173 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta charset="utf-8"/>	
+	
+	<title>
+		<%block name="title">
+			Seedfield Songs by ${page.button}
+			% if not page.forwards:
+				(backwards)
+			% endif
+		</%block>
+	</title>
+	<link rel="stylesheet" href="songlists.css">
+	<script src="jquery-3.4.1.js"></script>
+	<script>
+		$(function() {
+			function sortTable(f,n){
+				var rows = $('#songstable tbody tr').get();
+			
+				rows.sort(function(a, b) {
+			
+					var A = getVal(a);
+					var B = getVal(b);
+			
+					if(A < B) {
+						return -1*f;
+					}
+					if(A > B) {
+						return 1*f;
+					}
+					return 0;
+				});
+			
+				function getVal(elm){
+					var v = $(elm).children('td').eq(n).text().toUpperCase();
+					if($.isNumeric(v)){
+						v = parseInt(v,10);
+					}
+					return v;
+				}
+			
+				$.each(rows, function(index, row) {
+					$('#songstable').children('tbody').append(row);
+				});
+			}
+			var f_NewID = 1;
+			var f_DateID = 1;
+			$("#NewID").click(function(){
+			    f_NewID *= -1;
+			    var n = $(this).prevAll().length;
+			    sortTable(f_NewID,n);
+			});
+
+			function loadingNow(){
+			    var deferred = $.Deferred();
+				$('body').change(function(){
+					deferred.resolve()
+				}).toggleClass("loading");
+				return deferred.promise();
+			}			
+
+			$("#DateID").click(function(){
+			    f_DateID *= -1;
+			    var n = $(this).prevAll().length;
+				$('body').toggleClass("loading").promise()
+				.done(function(){
+			    	sortTable(f_DateID,n);
+				}).done(function(){
+						$('body').toggleClass("loading");
+				});
+
+//			    var deferred = new $.Deferred();
+
+//    var deferred = $.Deferred();
+//    $("<img/>").attr("src", newurl).load(function () {
+//        var s = {
+//            w: this.width,
+//            h: this.height
+//        };
+//        //pass the dimensions are arguments to the done callback
+//        deferred.resolve(s);
+//    });
+//    return deferred.promise();
+
+//			    $.Deferred(function(it){
+//					$('body').toggleClass("loading");
+//					it.resolve();
+//					return it.promise();
+//				})
+
+/*		    	loadingNow()
+				  .then(function(){
+			    	sortTable(f_DateID,n);
+			    	causeError();
+				}).then(function(){
+					$('body').toggleClass("loading");
+				});
+*/
+			});
+		
+		});
+	</script>
+	
+</head>
+<body>
+    <h1>${title()}</h1>
+    <p>Created on <strong>${today.isoformat()}</strong>.
+       Ask Andrew to update me if I'm out of date!</p>
+    <h3>Hints:</h3>
+    <ul>
+       <li>Tap/click underlined stuff</li>
+       <li>Your browser can search the songs by name - ctrl-F on windows, tap three dots and choose "find in page" on mobile</li>
+       <li>Check back at the <a href="index.html">homepage</a> for things I'm planning</li>
+    </ul>
+        
+	<table id="songstable" cellpadding="3">
+	<thead>
+		<tr>
+			<%def name="headerLink(text,href)">
+				<th rowspan="2" class="clickable" id="${makeID(text)}">
+					${text}
+				</th>
+			</%def>
+			${headerLink("New",links["New"])}
+			<th rowspan="2" class="clickable" id="${makeID('Date')}">
+				<div style="visibility:hidden;">0000-00-00</div>
+					Date
+				<div style="visibility:hidden;">0000-00-00</div>
+			</th>
+			${headerLink("Song",links["Song"])}
+			<th colspan="${len(recentDates)}">In the last...</th>
+		</tr>
+		<tr>
+			% for periodName in recentDates.keys():
+				<th class="fixedwidth" id="${makeID(periodName)}">${periodName}</th>
+			% endfor
+		</tr>
+	</thead>
+	<tbody>
+	% for song in finalTable:
+		<tr class="row">
+		   %if not page.hasDates or song.newToday == "":
+			<td></td>	
+		   %else:
+			<td class="new">New</td>	
+		   %endif	
+			<td style="background-color:${colourDateFunction(song)}">${getSongDate(song)}</td>	
+			<td class="songname">${song.songname}</td>
+			% for periodName in recentDates.keys():
+				<td class="songfrequency" 
+				    style="background-color:${colourFrequency(periodName,song.recentTimes)}">
+					% if song.recentTimes[periodName].number == 0:
+						0
+					% else:
+						<div class="tooltip fixedwidth"> ${song.recentTimes[periodName].number} 
+							<span class="tooltiptext">
+								<p>${periodName}:</p>
+							% for date in song.recentTimes[periodName].dates:
+								<p>${date}</p>
+							% endfor
+							</span>
+						</div>
+					% endif
+				</td> 
+			% endfor
+		</tr>
+	%endfor
+	</tbody>
+	</table>
+	<div class="waitingModal"><!-- Place at bottom of page --></div>
+</body>
+</html>

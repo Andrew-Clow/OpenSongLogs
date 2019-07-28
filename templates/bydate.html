@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta http-equiv="Expires" content="86400"/>
+	<title>
+		<%block name="title">
+			Seedfield Songs by ${page.button}
+			% if not page.forwards:
+				(backwards)
+			% endif
+		</%block>
+	</title>
+	<link rel="stylesheet" href="songlists.css">
+	
+</head>
+<body>
+    <h1>${title()}</h1>
+    <p>Created on <strong>${today.isoformat()}</strong>.
+       Ask Andrew to update me if I'm out of date!</p>
+    <h3>Hints:</h3>
+    <ul>
+       <li>Tap/click underlined stuff</li>
+       <li>Your browser can search the songs by name - ctrl-F on windows, tap three dots and choose "find in page" on mobile</li>
+       <li>Check back at the <a href="index.html">homepage</a> for things I'm planning</li>
+    </ul>
+        
+	<table id="songstable" cellpadding="3">
+		<tr>
+			<%def name="mainHeaderLink(text,hr)">
+				<th rowspan="2" class="clickable" onclick='location.href="${hr}";'>
+					<a href="${hr}">${text}</a>
+				</th>
+			</%def>
+			<%def name="subHeaderLink(text,hr)">
+				<th class="clickable timeperiod" onclick='location.href="${hr}";'>
+					<a href="${hr}">${text}</a>
+				</th>
+			</%def>
+			${mainHeaderLink("New",links["New"])}
+			<th rowspan="2" class="clickable" onclick='location.href="${links['Date']}";'>
+				<div style="visibility:hidden;">0000-00-00</div>
+					<a href="${links["Date"]}">Date</a>
+				<div style="visibility:hidden;">0000-00-00</div>
+			</th>
+			<th rowspan="2" class="shrunk">Book</th>
+			${mainHeaderLink("No.",links["No."])}
+			${mainHeaderLink("Song",links["Song"])}
+			<th colspan="${len(recentDates)}">In the last...</th>
+		</tr>
+		<tr>
+			% for periodName in recentDates.keys():
+				${subHeaderLink(periodName,links[periodName])}
+			% endfor
+		</tr>
+	% for song in finalTable:
+		<tr class="row">
+		   %if not page.hasDates or song.newToday == "":
+			<td></td>	
+		   %else:
+			<td class="new">New</td>	
+		   %endif	
+			<td style="background-color:${colourDateFunction(song)}">${getSongDate(song)}</td>	
+			<td style="background-color:${bookColour[bookNo(song.songnumber)]}" class="number" >${bookNo(song.songnumber)}</td>	
+			<td style="background-color:${bookColour[bookNo(song.songnumber)]}" class="number" >${song.songnumber}</td>	
+			<td class="songname">${song.songtitle}</td>
+			% for periodName in recentDates.keys():
+				<td class="number" 
+				    style="background-color:${colourFrequency(periodName,song.recentTimes)}">
+					% if song.recentTimes[periodName].number == 0:
+						0
+					% else:
+						<div class="tooltip fixedwidth"> ${song.recentTimes[periodName].number} 
+							<span class="tooltiptext">
+								<p>${periodName}:
+									% for date in song.recentTimes[periodName].dates:
+										<br>${date}
+									% endfor
+								</p>
+							</span>
+						</div>
+					% endif
+				</td> 
+			% endfor
+		</tr>
+	%endfor
+	</table>
+	
+</body>
+</html>

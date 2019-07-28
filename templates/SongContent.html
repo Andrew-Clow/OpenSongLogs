@@ -1,0 +1,42 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta charset="utf-8"/>	
+
+	
+	<title>
+		<%block name="title">
+			${pagetitle}
+		</%block>
+	</title>
+	<link rel="stylesheet" href="comparisons.css">
+	<script src="songcompare.js"></script> 
+	
+</head>
+<body>
+
+<h1>${title()}</h1>
+
+<table id="from"><tbody>
+% for song in songlist:
+	<tr>
+		<td class="">
+			<div class="lyricsbutton touchtooltip" onclick="toggletooltip(this);">
+				lyrics
+				<span class="tooltiptext">
+					${songContents[song].lyrics}
+				</span>
+			</div>
+		</td>
+		<td class="fromsong" onclick="selectElementText(this);">
+			${alter(songContents[song].songname)}
+		</td>
+
+	</tr>
+% endfor	
+</tbody>
+</table>
+
+
+</body>
+</html>
