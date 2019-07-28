@@ -1,0 +1,321 @@
+body { font-family: calibri,helvetica,sans-serif;}
+
+
+.centred{
+	text-align: center; 
+    vertical-align: middle;
+}
+
+th {
+  background-color: #ccffcc;
+  text-align: left;
+}
+
+.hidden{
+  display:none;
+}
+
+.faint{
+	color:#cccccc;
+}
+
+table {
+	table-layout: fixed;
+}
+
+
+#tosong,#fromsong,#replacements{
+	width:98%;
+}
+
+#searchbox,.searchbox{
+	width:90%;
+	background-color:#ccccff;
+}
+
+#searchbox.completed,.searchbox.completed{
+	background-color:#ccffcc;
+}
+
+
+.fromsong, .tosong{
+	min-width:100%;
+}
+
+
+
+
+
+.songfrequency, .number {
+  text-align: center;
+}
+
+.fixedwidth {
+  width:3em;
+}
+.wide{
+  width:15em;
+  height:3em;
+}
+
+.clickable {
+	cursor:pointer;
+	text-decoration: underline;
+}
+
+.clickable:hover {
+  background-color: #e2e9f2
+}
+
+.clicked {
+	cursor: progress;
+	text-decoration: none;
+}
+.clicked:hover {
+  background-color: #ffb380;
+}
+
+td.songchoices{
+  background-color:palegreen
+}
+.subtable{
+  display:inline-table;
+  width: 100%;
+  height: 100%;
+  //border-collapse: collapse;
+  border: 2px solid palegreen;
+  background-color:palegreen;
+}
+
+td.noheight{
+   height:0px;
+   background-color: palegreen;
+   border:0px;
+}
+
+td .verse :first-of-type{
+   background-color: palegreen;
+
+}
+
+.replacement{
+  background-color: #ccffcc
+}
+#neverreplace{
+  background-color: #ffcccc
+}
+
+.songname, td {
+  background-color: #f2f2f2;
+  vertical-align: top;
+}
+
+.new {
+  background-color: #ffff00;
+}
+
+/* ------------- Waiting ---------------- */
+
+/* Start by setting display:none to make this hidden.
+   Then we position it in relation to the viewport window
+   with position:fixed. Width, height, top and left speak
+   for themselves. Background we set to 80% white with
+   our animation centered, and no-repeating */
+.waitingModal {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba( 255, 255, 255, .8 ) 
+                url('waiting.gif') 
+                50% 50% 
+                no-repeat;
+}
+
+div.lyricsbutton{
+}
+
+/* When the body has the loading class, we turn
+   the scrollbar off with overflow:hidden */
+body.loading .waitingModal {
+    overflow: hidden;   
+}
+
+/* Anytime the body has the loading class, our
+   waitingModal element will be visible */
+body.loading .waitingModal {
+    display: block;
+}
+
+/* ____________ scrolling subtables _________ */
+
+#layout{
+	width:100%
+}
+
+//html, body {
+//    height: 100%;
+//    overflow: hidden;
+//    margin: 0;
+//}
+
+html { 
+//    height:100%;
+//    width=100%;
+}
+
+body { 
+//    min-height:100vh;
+//    overflow:hidden;
+//    margin:0;
+}
+
+.verticalviewport{
+	height:50vh;
+    overflow-y:scroll;
+}
+
+.scrollingtable{
+    height: 100%;
+    width:100%;
+    overflow-y:scroll;
+}
+
+
+
+/* Generic pane rules */
+body { margin:0  }
+.row, .col { overflow: hidden; position: absolute; }
+.row { left:0 ; right:0 ; }
+.col { top:0 ; bottom:0 ; }
+.scroll-x { overflow-x: auto; }
+.scroll-y { overflow-y: auto; }
+
+/* Specific pane sizes */
+
+.left.col { width: 50vw; }
+.right.col { left: 50vw; right:0 ; }
+.header.row { height: 16.5em;}
+.body.row { top: 16.5em; bottom: 0px; }
+.search.row { height: 3em;}
+.undersearch.row { top: 3em;bottom: 0}
+.narrowerright.col{width:4em;right:0}
+.widerleft.col{left:0;right:4.1em}
+.topbit.row { height: 7em;}
+.undertopbit.row { top: 7em; bottom: 0px; }
+
+
+
+
+/* ____________ Left and right scroll divs _________ */
+
+/*html, body {
+    height: 100%;
+    overflow: hidden;
+    margin: 0;
+}
+*/
+
+#content {
+    height: 100%;
+}
+
+.left {
+    float: left;
+    width: 50%;
+}
+.right {
+    float: left;
+    width: 50%;
+}
+
+div .leftsection {
+    float: left;
+    width: 50%;
+    height: 100%;
+    overflow: auto;
+    box-sizing: border-box;
+    padding: 0.4em;
+}
+div .rightsection {
+    float: right;
+    width: 50%;
+    height: 100%;
+    overflow: auto;
+    box-sizing: border-box;
+    padding: 0.4em;
+}
+
+/* ------------- Tooltips ---------------- */
+
+/* Tooltip container */
+.tooltip, .touchtooltip{
+  position: relative;
+  width: 100%;
+  display: inline-block;
+  text-decoration: underline;
+  /* border-bottom: 1px dotted black;  If you want dots under the hoverable text */
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext, .touchtooltip .tooltiptext {
+  visibility: hidden;
+  width: 40em;
+  background-color: #006600;
+  color: #fff;
+  text-align: left;
+  padding: 5px;
+  border-radius: 6px;
+ 
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+  top: 2.5em;
+  left: 0em;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+.tooltipyes{
+  background-color: #006600;
+  color: #fff;
+}
+
+/* Show the tooltip text when the tooltip container becomes tooltipyes*/
+.tooltipyes .tooltiptext {
+  visibility: visible;
+}
+
+.no{
+  vertical-align:middle;
+  background-color: hsl(0, 100%, 40%);
+  padding: 15px;
+  text-align: center;
+}
+.no:hover{
+  background-color: hsl(0, 100%, 30%);
+  cursor: pointer;
+}
+.yes{
+  vertical-align:middle;
+  background-color: hsl(150, 100%, 40%);
+  padding: 15px;
+  text-align: center;
+}
+.yes:hover{
+  background-color: hsl(150, 100%, 30%);
+  cursor: pointer;
+}
+.narrow{
+  padding: 8px;
+}
+
+.goaway, .neverlist{
+  display: none;
+}

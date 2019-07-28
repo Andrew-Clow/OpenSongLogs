@@ -5,7 +5,6 @@ www/
 wwwlocal/
 Andrew/
 *.stackdump
-*.lnk
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -17,11 +17,13 @@
     <h1>${title()}</h1>
   
     <h2>What's here</h2>
+	<p>You can now see <span class="new">song text</span>, including <b>full text search</b> for if you can only remember the
+		end of the third verse, but you need to log in. Ask me for a username and password if you don't have one.</p>
     <p>You can see the songs we've sung by Date, by Song name or by when the song was New, just click on the links below:</p>
         
 			<%def name="headerLink(text,href)">
 				&nbsp;
-				<span class="clickable big">
+				<span class="clickable big" onclick='location.href="${href}"'>
 					<a href="${href}">${text}</a>
 				</span>
 			</%def>
@@ -32,16 +34,17 @@
 	<p>When you see a number under "In the last", if you move your mouse over it or tap it, you'll get a list of when it's been used. The pages are quite slow to load because there's a lots of data on each page.</p>
 
     <p>These pages were created on ${today.isoformat()}.
-    Ask Andrew to update the pages if they're out of date!</p>
+    Ask me to update the pages if they're out of date!</p>
 	
 	<h2>What's planned</h2>
 	<ul>
-		<li>Put the book number next to the song number</li>
-		<li>Allow you to click a song title to see the song text, possibly with the chords and other details omitted. Use password protection for this if its online.</li>
+		<li>Allow you to click a song title anywhere to see the song text when you've logged in.</li>
 	</ul>
 
 	<h2>What's done now</h2>
 	<ul>
+		<li>Full text song search is available! Ask me for a login.</li>
+		<li>Put the book number next to the song number</li>
 		<li>There's now a list of new songs that aren't in Songs of Fellowship.</li>
 		<li>Also you can just show December songs in case you're looking for Christmas songs.</li>
 		<li>Most of the missing services from 2012-2015 are now in, having transcribed an awful lot of orders of services I've hoarded in Word into OpenSong.</li>

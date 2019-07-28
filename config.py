@@ -1,12 +1,20 @@
+# Copyright 2019 Andrew Clow GPLv3 (see COPYING.txt)
+
+# regex for finding assignment to function parameter that has a default value:
+# def \w+\(.*(\w)+.*\):(.*\n)*.* \1 =
+# assignment to a function parameter is a big mistake. function parameters that have a default value are implicitly static in python!
+
+
+
 # __________ Input _________
 
-prefix = "../../../Dropbox/Not work/Church Laptop Open Song Files/"
+inputprefix = "../../../Dropbox/Not work/Church Laptop Open Song Files/"
 setpattern = "20*"
-oldsetsglob = prefix + "sets2/" + setpattern
-newsetsglob = prefix + "sets/"  + setpattern
-songglob = prefix + "songs/*"
-notnewpath = prefix + "sets/not new"
-notsongspath = prefix + "sets/not songs"
+oldsetsglob = inputprefix + "sets2/" + setpattern
+newsetsglob = inputprefix + "sets/" + setpattern
+songglob = inputprefix + "songs/*"
+notnewpath = inputprefix + "sets/not new"
+notsongspath = inputprefix + "sets/not songs"
 includeAllSongsInSongHistoryTable = True
 
 # __________ Dates _________
@@ -16,6 +24,10 @@ recentDays = {"three months":92,
               "year":365.25}
 
 includeAllTimeInRecents = "All time"  # put emptystring if you don't want it
+
+datePeriods = list(recentDays.keys())
+if includeAllTimeInRecents:
+    datePeriods.append(includeAllTimeInRecents)
 
 filedateformat = "%Y%m%d"
 yearsAgoThatNewnessStarts = 5
@@ -44,10 +56,3 @@ bookColour = {1:"#cf7d7e",
               "":"",
               None:"",
               }
-
-# __________ Output _________
-
-outputprefixes =["./www/","../../../Dropbox/Not work/Sundays/SeedfieldSongs - sortable lists of songs we've sung/"]
-
-makotemplates = "./templates"
-makomodules = "./mako_modules"

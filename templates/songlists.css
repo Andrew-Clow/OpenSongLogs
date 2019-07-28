@@ -1,0 +1,112 @@
+body { font-family: calibri,helvetica,sans-serif;}
+
+.number {
+  text-align: center;
+}
+
+.fixedwidth {
+  width:3em;
+}
+
+.clickable {
+	cursor:pointer;
+	text-decoration: underline;
+    background-color: #f2f2f2
+}
+
+.timeperiod {
+	max-width:3em;
+}
+
+.clickable:hover {
+  background-color: #e2e9f2
+}
+
+.clicked {
+	cursor: progress;
+	text-decoration: none;
+}
+.clicked:hover {
+  background-color: #ffb380;
+}
+
+.songname,th,td {
+  background-color: #f2f2f2
+}
+
+.big {
+	padding: 15px;
+	display: inline-block;
+}
+.shrunk {
+	font-size:small;
+}
+
+.new {
+  background-color: #ffff00;
+}
+
+/* ------------- Waiting ---------------- */
+
+/* Start by setting display:none to make this hidden.
+   Then we position it in relation to the viewport window
+   with position:fixed. Width, height, top and left speak
+   for themselves. Background we set to 80% white with
+   our animation centered, and no-repeating */
+.waitingModal {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba( 255, 255, 255, .8 ) 
+                url('waiting.gif') 
+                50% 50% 
+                no-repeat;
+}
+
+/* When the body has the loading class, we turn
+   the scrollbar off with overflow:hidden */
+body.loading .waitingModal {
+    overflow: hidden;   
+}
+
+/* Anytime the body has the loading class, our
+   waitingModal element will be visible */
+body.loading .waitingModal {
+    display: block;
+}
+
+/* ------------- Tooltips ---------------- */
+
+/* Tooltip container */
+.tooltip {
+  position: relative;
+  display: inline-block;
+  text-decoration: underline;
+  /* border-bottom: 1px dotted black;  If you want dots under the hoverable text */
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 120px;
+  background-color: #006600;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+ 
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+  top: -5px;
+  right: 105%;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
