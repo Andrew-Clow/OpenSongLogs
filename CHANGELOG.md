@@ -1,3 +1,13 @@
+# 1.2.0
+
+## GUI is here!
+
+* The GUI lets you only save some places. Unfortunately at the moment, 
+  if you change something and press the button again, it'll save exactly
+  the same content again. This is a massive bug, but hey, it looks pretty.
+* Renamed some templates.
+* Fixed some bugs in the private pages where I hadn't realised they relied on jquery.
+
 # 1.1.0
 
 ## Refactored, reorganised etc

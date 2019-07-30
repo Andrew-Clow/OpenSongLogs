@@ -20,10 +20,10 @@
     <p>Here are a few pages featuring song lyrics that I've found useful.</p>
         
 			<%def name="headerLink(text,href)">
-				&nbsp;
-				<span class="clickable big">
-					<a href="${href}">${text}</a>
-				</span>
+
+				<a href="${href}"><span class="clickable big">
+									${text}
+								  </span></a>&nbsp;
 			</%def>
 			% for linktext in linksOnHomepage.keys():
 				${headerLink(linktext,links[linksOnHomepage[linktext]])}

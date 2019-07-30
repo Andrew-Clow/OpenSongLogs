@@ -1,0 +1,77 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta charset="utf-8"/>	
+
+	
+	<title>
+		<%block name="title">
+			${pagetitle}
+		</%block>
+	</title>
+	<link rel="stylesheet" href="comparisons.css">
+	<script src="jquery-3.4.1.js"></script>
+	<script src="songcompare.js"></script> 
+	<link rel="icon" 
+      type="image/png" 
+      href="favicon.ico">
+	
+</head>
+<body>
+	<div class="topbit row">
+		<h1>${title()}</h1>
+		<p>To show just some songs in the list, <span class='searchbox'>type in the box</span> and <span class='searchbox completed'>tap/click update</span>.
+	</div>
+	<div class="undertopbit row">
+		<div class="search row">
+			<div class="widerleft col">
+				<textarea 	
+						rows="2" 
+						id="searchbox" 
+						class="completed" 
+						oninput="uncomplete(this);"
+						onkeypress="return onEnterZapNonMatchingSubthingsOf(event,'searchbox','tr','to');"
+						></textarea>
+			</div>
+			<div 	class="yes narrowerright col" 
+					onclick="zapNonMatchingSubthingsOf('searchbox','tr','to');"
+						>update</div>
+		</div>
+		<div class="undersearch row">
+		  <div class="left col scroll-y">
+			<table id="to" class="">
+			<thead>
+				<tr>
+					<th>&nbsp&nbsp</th>
+					<th>Song</th>
+				</tr>
+			</thead>
+			<tbody>
+			% for song in songlist:
+				<tr class="">
+					<td style="background-color:${bookColour[bookNo(numberFromFileName(song))]}" 
+						class="number" >${bookNo(numberFromFileName(song))}</td>	
+					<td class="tosong" 
+							onclick="toggletooltip(this);
+								 	 selectElementText(this);
+								 	 clearOrCopySecondInto(this,'songtext','tooltipyes');"
+							>${songContents[song].songname}<span
+							 	class="hidden">
+								${songContents[song].lyrics}
+							</span>
+					</td>
+				</tr>
+			% endfor	
+			</tbody>
+			</table>
+		  </div>
+		  <div	id="songtext" 
+		  		class="right col scroll-y"
+		  		onclick="selectFullElementText(this);">
+		  	<span class="faint">(Song text will appear here when you tap or click a song.)</span>
+		  </div>
+		</div>
+	</div>
+
+</body>
+</html>

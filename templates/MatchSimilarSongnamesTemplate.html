@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta charset="utf-8"/>	
+
+	
+	<title>
+		<%block name="title">
+			${pagetitle}
+		</%block>
+	</title>
+	<link rel="stylesheet" href="comparisons.css">
+	<script src="jquery-3.4.1.js"></script>
+	<script src="songcompare.js"></script>
+	
+</head>
+<body>
+
+    <h1>${title()}</h1>
+    <textarea rows="4" cols="90" id="replacements" class="replacement"></textarea>
+    <textarea rows="4" cols="40" id="neverreplace"></textarea>
+
+	%for match in maybematches:
+		<div>
+		% for table in match.permutations():
+			<table><thhead>
+			<tr>
+			  <td colspan="${len(table["song"])}">
+				<table class="subtable"><tbody>
+				<tr>
+				<td class="songchoices"></td>
+				<td class="songchoices" style="text-align:center" colspan="2">Tap to add rules:</td>
+					<td class="wide no" rowspan="${len(table["song"])+1}"
+						onclick="byebyetop(this)">
+						X
+					</td>
+				<tr>
+				% for song in table["song"][1:]:
+				<tr>
+					<td class="replacement"
+						onclick="selectElementText(this);">
+							<br>"${song}":"${table["song"][0]}",
+					</td>
+					<td class="yes" 
+						onclick="copyPreviousInto(this,'replacements');${match.byebyefunction()}(this)">
+						Yes
+					</td>
+					<td class="neverlist">"${song}",
+</td>
+					<td class="no" 
+					    onclick="copyPreviousInto(this,'neverreplace');${match.byebyefunction()}(this)">
+						Never
+					</td>
+				</tr>
+				%endfor
+				</tbody></table>
+			  </td>
+			</tr>
+			% for song in table["song"]:
+				<th>${song}</th>
+			%endfor
+			</tr></thead><tbody>
+			% for verse in list(table.keys())[1:]:
+				<tr>
+				% for v in table[verse]:
+					<td class="verse">
+					<strong>${verse}</strong>
+					%for line in v:
+						<br>&nbsp;${line}
+					%endfor
+					</td>
+				%endfor
+				</tr>
+			%endfor
+			</tbody>
+		%endfor
+		</div>
+	%endfor
+
+
+</body>
+</html>

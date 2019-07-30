@@ -22,10 +22,10 @@
     <p>You can see the songs we've sung by Date, by Song name or by when the song was New, just click on the links below:</p>
         
 			<%def name="headerLink(text,href)">
-				&nbsp;
-				<span class="clickable big" onclick='location.href="${href}"'>
-					<a href="${href}">${text}</a>
-				</span>
+
+				<a href="${href}"><span class="clickable big">
+									${text}
+								  </span></a>&nbsp;
 			</%def>
 			% for linktext in linksOnHomepage.keys():
 				${headerLink(linktext,links[linksOnHomepage[linktext]])}

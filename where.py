@@ -90,11 +90,11 @@ publicButtons = buttonLocations.keys()
 
 privateButtonLocations = {
     'Missing':          RelativeLocation('','MissingSongs.html'),
-    'Numbered':         RelativeLocation('','SongContent.html'),
-    'Numberless':       RelativeLocation('','SongsWithoutNumbers.html'),
-    'Match Unnumbered': RelativeLocation('','SongCompareUnnumbered.html'),
-    'Undealt With':     RelativeLocation('', 'SongCompareUndealtWith.html'),
-    'Match Similar Songnames': RelativeLocation('', 'SongComparison.html')
+    'Numbered':         RelativeLocation('','NumberedSongContents.html'),
+    'Numberless':       RelativeLocation('','NumberlesssSongContents.html'),
+    'Match Unnumbered': RelativeLocation('','MatchUnnumbered.html'),
+    'Undealt With':     RelativeLocation('', 'MatchUndealtWith.html'),
+    'Match Similar Songnames': RelativeLocation('', 'MatchSimilarSongnames.html')
 }
 privateButtons = privateButtonLocations.keys()
 

@@ -84,7 +84,8 @@ def saveAs(output, location,customoutputprefixes = None):  # Save in all the out
     for outputprefix in myoutputprefixes:
         with open(location.within(outputprefix), "w", encoding="utf-8") as f:
             print(output, file=f)
-        print(location.within(""))
+        yield(outputprefix)
+        # print('Saved {0} in {1}'.format(location.filename,location.within("")))
 
 
 def apply_template(templatename, **kwargs):
@@ -109,7 +110,7 @@ class Saveable(object):
         myoutputprefixes = customoutputprefixes or where.outputprefixes
         if self.private:
             myoutputprefixes = where.privateprefixes
-        saveAs(self.contents,self.location,myoutputprefixes)
+        return saveAs(self.contents,self.location,myoutputprefixes)
 
 # ______________________________________________________________________________________________________________________
 #                         List Pages                                                                                   .
@@ -170,7 +171,7 @@ class ListPage(Saveable):
                  hasDates,  # True to use sundayTable, false to put blanks in the New and Date columns
                  underlyingTable,  # Underlying table of SongHistory or SongOnDate
                  onlyif=lambda x: True,  # Lambda to keep records
-                 template="bydate.html",  # override if needed
+                 template="ListPageTemplate.html",  # override if needed
                  ):
         self.button = button
         self.sortfunction = sortfunction
@@ -200,86 +201,86 @@ class ListPage(Saveable):
 # Make an entry here, and in the negateableButtons list.
 # Probably add it into linksOnHomepage too.
 
-listPages = [
-    ListPage(button="Date",
+listPages = {
+    "Date":ListPage(button="Date",
              underlyingTable=songlists.sundayTable,
              sortfunction=None,
              usereversed=False,
              hasDates=True),
-    ListPage(button="-Date",
+    "-Date":ListPage(button="-Date",
              underlyingTable=songlists.sundayTable,
              sortfunction=lambda x: x.date,  # Weirdly, this does the right thing
              usereversed=False,  # when we don't reverse it
              hasDates=True),
-    ListPage(button="New",
+    "New":ListPage(button="New",
              underlyingTable=songlists.sundayTable,
              sortfunction=lambda x: (x.date, x.songfilename.lower()),
              usereversed=True,
              onlyif=lambda x: x.newToday.lower() == "new",
              hasDates=True),
-    ListPage(button="-New",
+    "-New":ListPage(button="-New",
              underlyingTable=songlists.sundayTable,
              sortfunction=lambda x: (x.date, x.songfilename.lower()),
              usereversed=False,
              onlyif=lambda x: x.newToday.lower() == "new",
              hasDates=True),
-    ListPage(button="Song",
+    "Song":ListPage(button="Song",
              underlyingTable=songlists.allSongsTable,
              sortfunction=lambda x: x.songtitle.lower(),
              usereversed=False,
              hasDates=False),
-    ListPage(button="-Song",
+    "-Song":ListPage(button="-Song",
              underlyingTable=songlists.allSongsTable,
              sortfunction=lambda x: x.songtitle.lower(),
              usereversed=True,
              hasDates=False),
-    ListPage(button="No.",
+    "No.":ListPage(button="No.",
              underlyingTable=songlists.allSongsTable,
              sortfunction=lambda x: x.songnumber + "zzzzzz" + x.songtitle.lower(),
              usereversed=False,
              hasDates=False),
-    ListPage(button="-No.",
+    "-No.":ListPage(button="-No.",
              underlyingTable=songlists.allSongsTable,
              sortfunction=lambda x: x.songnumber + "zzzzzz" + x.songtitle.lower(),
              usereversed=True,
              hasDates=False),
-    ListPage(button="Non-SoF new",
+    "Non-SoF new":ListPage(button="Non-SoF new",
              underlyingTable=songlists.sundayTable,
              sortfunction=lambda x: (x.date, x.songfilename.lower()),
              usereversed=True,
              onlyif=lambda x: x.newToday.lower() == "new" and x.songnumber == '',
              hasDates=True),
-    ListPage(button="December",
+    "December":ListPage(button="December",
              underlyingTable=songlists.sundayTable,
              sortfunction=None,
              usereversed=False,
              onlyif=lambda x: x.date.isoformat()[4:8] == "-12-",
              hasDates=True),
-
-]
+}
 
 for period in classes.datePeriods:
-    listPages.append(ListPage(
-        button=period,
-        underlyingTable=songlists.allSongsTable,
-        sortfunction=sortFunctionFromPeriod(period),
-        usereversed=True,
-        hasDates=False))
-    listPages.append(ListPage(
+    listPages.update({
+        period:ListPage(
+            button=period,
+            underlyingTable=songlists.allSongsTable,
+            sortfunction=sortFunctionFromPeriod(period),
+            usereversed=True,
+            hasDates=False),
+    '-'+period:ListPage(
         button='-'+period,
         underlyingTable=songlists.allSongsTable,
         sortfunction=sortFunctionFromPeriod(period),
         usereversed=False,
-        hasDates=False))
+        hasDates=False)})
 if None==3:
-    listPages.append(
-        ListPage(button="Test",
+    listPages.update({
+        "Test":ListPage(button="Test",
              template="test.html",
              underlyingTable=songlists.sundayTable,
              sortfunction=None,
              usereversed=True,
              hasDates=True)
-    )
+    })
 
 
 #
@@ -302,12 +303,12 @@ Y8.   .8P   88   88    88 88.  ... 88           88        88.  .88 88.  .88 88. 
 """
 
 
-homepages = [Saveable(button,pagecontent)
+homePages = {button:Saveable(button, pagecontent)
              for button in ["Seedfield Songs","Home"]
-             for pagecontent in [apply_template("SeedfieldSongs.html",
+             for pagecontent in [apply_template("HomePageTemplate.html",
                                                 links=where.actualLinks("Home"),
                                                 linksOnHomepage=where.linksOnHomepage,
-                                                today=classes.today)]]
+                                                today=classes.today)]}
 
 
 
@@ -315,15 +316,6 @@ homepages = [Saveable(button,pagecontent)
 
 
 
-print('Do www() to save the website.')
-
-def www(customoutputprefixes=None):
-    myoutputprefixes = customoutputprefixes or where.outputprefixes
-    for homepage in homepages:
-        homepage.save(myoutputprefixes)
-    for page in listPages:
-        page.save(myoutputprefixes)
-    print("Finished www.")
 
 
 # ___________________________________________________________
@@ -340,22 +332,22 @@ def www(customoutputprefixes=None):
 
 
 
-songtextPages = [
-    Saveable("Search",
-             apply_template("SongSearch.html", songlist=songlists.songListApproved,
+songtextPages = {
+    "Search":Saveable("Search",
+             apply_template("SongSearchTemplate.html", songlist=songlists.songListApproved,
                             songContents=songlists.songContents, numberFromFileName=classes.numberFromFileName,
                             pagetitle="Search the full text of songs", bookColour=config.bookColour,
                             bookNo=classes.bookNo)),
-    Saveable("Song Text Home",
-             apply_template("songtext.index.html",
+    "Song Text Home":Saveable("Song Text Home",
+             apply_template("songtext.HomePageTemplate.html",
                             links=where.actualLinks("Song Text Home"),
                             linksOnHomepage={"Search the text of all songs":"Search",
                                              "Main Home Page":"Home"},
                             today=classes.today))
-]
-privatePages = [
-    Saveable("Missing",
-             apply_template("SongCompare.html",
+}
+privatePages = {
+    "Missing":Saveable("Missing",
+             apply_template("MatchSongsTemplate.html",
                             fromsongs=songlists.songsWithoutSongFiles,
                             tosongs=songlists.songListFromFiles,
                             songContents=dict(songlists.songContents,
@@ -363,47 +355,55 @@ privatePages = [
                             pagetitle="Missing songs: match up with actual songs and add to songreplacements.py"),
              private=True),
 
-    Saveable("Numbered",
-             apply_template("SongContent.html",
+    "Numbered":Saveable("Numbered",
+             apply_template("SongContentsTemplate.html",
                             songlist=songlists.songsWithNumbers,
                             songContents=songlists.songContents,
                             pagetitle="Song Content for all songs with numbers",
                             alter=lambda song: '"' + song + '",'),
              private=True),
-    Saveable("Numberless",
-             apply_template("SongContent.html",
+    "Numberless":Saveable("Numberless",
+             apply_template("SongContentsTemplate.html",
                             songlist=songlists.songListFromSetsWithoutNumbers,
                             songContents=songlists.songContents,
                             pagetitle="Songs without numbers we've used",
                             alter=lambda song: '"' + song + '":'),
              private=True),
-    Saveable("Match Unnumbered",
-             apply_template("SongCompare.html",
+    "Match Unnumbered":Saveable("Match Unnumbered",
+             apply_template("MatchSongsTemplate.html",
                             fromsongs=songlists.songListFromSetsWithoutNumbers,
                             tosongs=songlists.songsWithNumbers,
                             songContents=songlists.songContents,
                             pagetitle="Match up unnumbered songs"),
              private=True),
-    Saveable("Undealt With",
-             apply_template("SongCompare.html",
+    "Undealt With":Saveable("Undealt With",
+             apply_template("MatchSongsTemplate.html",
                             fromsongs=songlists.songsUndealtWithWithoutNumbers,
                             tosongs=songlists.songsWithNumbers,
                             songContents=songlists.songContents,
                             pagetitle="Match up undealt with unnumbered songs"),
              private=True),
-    Saveable("Match Similar Songnames",
-             apply_template("SongComparison.html", maybematches=songlists.maybematches),
+    "Match Similar Songnames":Saveable("Match Similar Songnames",
+             apply_template("MatchSimilarSongnamesTemplate.html",
+                            maybematches=songlists.maybematches,
+                            pagetitle="Match songs with similar Songnames"),
              private=True)
-]
+}
 
 
-print('Do wwwlocal() to save the local utils,')
+
+def www(customoutputprefixes=None):
+    myoutputprefixes = customoutputprefixes or where.outputprefixes
+    for homepage in homePages.values():
+        homepage.save(myoutputprefixes)
+    for page in listPages.values():
+        page.save(myoutputprefixes)
 
 def wwwlocal(customoutputprefixes=None):
     myoutputprefixes = customoutputprefixes or where.outputprefixes
-    for pp in privatePages:
+    for pp in privatePages.values():
         pp.save(where.privateprefixes)
-    for stp in songtextPages:
+    for stp in songtextPages.values():
         stp.save(myoutputprefixes)
 
 # ______________________________________________________________________________________________________________________
@@ -412,17 +412,18 @@ def wwwlocal(customoutputprefixes=None):
 
 
 
-
 def saveAuxFiles(customoutputprefixes=None):
     myoutputprefixes = customoutputprefixes or where.outputprefixes
     for outputprefix in myoutputprefixes:
+        yield (outputprefix+':')
         for location in where.publicAuxLocations:
             shutil.copy2(where.makotemplates + "/" + location.filename, location.within(outputprefix))
-            print(location.within(""))
+            yield('\t'+location.within(""))
     for outputprefix in where.privateprefixes:
+        yield (outputprefix+':')
         for location in where.privateAuxLocations:
             shutil.copy2(where.makotemplates + "/" + location.filename, location.within(outputprefix))
-            print(location.within(""))
+            yield('\t'+location.within(""))
 
 # ______________________________________________________________________________________________________________________
 #                                                                                                                      .
