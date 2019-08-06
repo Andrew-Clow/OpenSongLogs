@@ -1385,7 +1385,7 @@ songreplacements = {
 
 }
 
-neverreplace = [
+neverreplace = {
     "lord we long to see your glory",
     "Holy Holy Holy",
     "Praise God from whom all blessings flow",
@@ -1433,7 +1433,7 @@ neverreplace = [
     "I Surrender All",
     "This little light of mine (kids)",
     "This little light of mine (On a Monday)",
-]
+}
 
 # counts = defaultdict(lambda:0)
 # for song in songreplacements.keys():

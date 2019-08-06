@@ -6,9 +6,9 @@ import xml.etree.ElementTree as ElementTree
 import os
 from collections import defaultdict
 
-from songreplacements import songreplacements,neverreplace
 from config import *
 import songlists
+
 
 
 # ______________________________________________________________________________________________________________________
@@ -55,16 +55,6 @@ class Dates(object):
         return "Dates(" + str(self.number) + ",[" + ", ".join(self.dates) + "])"
 
 
-def songNewOnDate(songfilename, date):
-    if songfilename in songlists.notnew:
-        return ""
-    elif not songlists.songs[songfilename]:
-        return "never"
-    elif date == min(songlists.songs[songfilename]) and date > newnessStarts:
-        return "new"
-    else:
-        return ""
-
 
 def mapisoformat(alistoflists):
     return [[l.isoformat() for l in alist] for alist in alistoflists]
@@ -78,8 +68,8 @@ def justSince(listofdates, since):
 recentPeriodMaximums = {period: 0 for period in recentDates}
 
 
-def recentDatesOf(songfilename):  # updates recentPeriodMaximums as a side effect
-    dates = songlists.songs[songfilename]
+def recentDatesOf(songfilename):  # updates recentPeriodMaximums as a side effect   # Thunks: SongSundays
+    dates = songlists.SongSundays.value[songfilename]
     recent = {}
     for period in datePeriods:
         recent[period] = justSince(dates, recentDates[period])
@@ -90,7 +80,7 @@ def recentDatesOf(songfilename):  # updates recentPeriodMaximums as a side effec
 
 
 # ______________________________________________________________________________________________________________________
-#                      Colours
+#                      Colours                                                                                         |
 # ______________________________________________________________________________________________________________________
 
 """
@@ -130,12 +120,6 @@ d8'   .8P 88.  .88 88    88 88.  .88       88
                                  .88          
                              d8888P           
 """
-
-def maybereplacesong(song):
-    if song in songreplacements:
-        return songreplacements[song]
-    else:
-        return song
 
 
 # ________________________ Song Numbers ____________________
@@ -191,20 +175,6 @@ class SongHistory(object):
             self.songnumber = ""
             self.songtitle = songfilename
 
-#        selfsongnumber = songfilename[0:4]
-#        if selfsongnumber.isdigit():
-#            selfsongtitle = songfilename[5:]
-#        else:
-#            maybeHPmatch = hpRE.match(songfilename)
-#            if maybeHPmatch:
-#                selfsongnumber = maybeHPmatch.group(1)
-#                selfsongtitle = maybeHPmatch.group(2)
-#            else:
-#                selfsongtitle = songfilename
-#                selfsongnumber = ''
-#        if not selfsongnumber == self.songnumber:
-#            print(selfsongnumber + " " + self.songnumber)
-
     def __repr__(self):
         return ("SongHistory"
                 + "(songfilename='" + self.songfilename
@@ -212,7 +182,17 @@ class SongHistory(object):
                 + ")")
 
 
-class SongOnDate(SongHistory):
+def songNewOnDate(songfilename, date):          # Thunks: NotNew, SongSundays
+    if songfilename in songlists.NotNew.value:
+        return ""
+    elif not songlists.SongSundays.value[songfilename]:
+        return "never"
+    elif date == min(songlists.SongSundays.value[songfilename]) and date > newnessStarts:
+        return "new"
+    else:
+        return ""
+
+class SongOnDate(SongHistory):                  # Thunks: NotNew, SongSundays
     def __init__(self,
                  songfilename="Error:song filename not supplied",  # Required
                  date="1970-01-01"):
@@ -362,7 +342,7 @@ class SongFile(object):
 flatten = lambda l: [item for sublist in l for item in sublist]
 
 
-class Match(object):
+class Match(object):    #Thunks: SongReplacements, NeverReplace
     def addNumberOf(self, asongname):
         songnumber = asongname[0:4]
         if songnumber.isdigit():
@@ -370,7 +350,7 @@ class Match(object):
 
     def addFromSongFile(self, asongfilename):
         asongname = os.path.basename(asongfilename)
-        if asongname not in songreplacements and asongname not in neverreplace:
+        if asongname not in songlists.SongReplacements.value and asongname not in songlists.NeverReplace.value:
             self.addNumberOf(asongname)
             root = ElementTree.parse(asongfilename).getroot()
             lyrics = root.findtext("lyrics")

@@ -7,128 +7,300 @@ import os
 
 import classes
 import config
+from thunk import *
 
-# _____________________SONG FILES__________________________
+# ____________________________________________________________________________________________________________________ #
+#                      Song Replacements                                                                               #
+# ____________________________________________________________________________________________________________________ #
 
-sundayFiles = glob.glob(config.oldsetsglob)
-sundayFiles.extend(glob.glob(config.newsetsglob))
-songFiles = glob.glob(config.songglob)
+"""
+.d88888b                                 888888ba                    dP                                                           dP            
+88.    "'                                88    `8b                   88                                                           88            
+`Y88888b. .d8888b. 88d888b. .d8888b.    a88aaaa8P' .d8888b. 88d888b. 88 .d8888b. .d8888b. .d8888b. 88d8b.d8b. .d8888b. 88d888b. d8888P .d8888b. 
+      `8b 88'  `88 88'  `88 88'  `88     88   `8b. 88ooood8 88'  `88 88 88'  `88 88'  `"" 88ooood8 88'`88'`88 88ooood8 88'  `88   88   Y8ooooo. 
+d8'   .8P 88.  .88 88    88 88.  .88     88     88 88.  ... 88.  .88 88 88.  .88 88.  ... 88.  ... 88  88  88 88.  ... 88    88   88         88 
+ Y88888P  `88888P' dP    dP `8888P88     dP     dP `88888P' 88Y888P' dP `88888P8 `88888P' `88888P' dP  dP  dP `88888P' dP    dP   dP   `88888P' 
+                                 .88                        88                                                                                  
+                             d8888P                         dP                                                                                  
+"""
+
+def LoadSongReplacementsEtc():
+    from songreplacements import songreplacements,neverreplace
+    return songreplacements,neverreplace
 
 
+SongReplacementsAndNeverReplace = Thunk(LoadSongReplacementsEtc, {}, 'SongReplacementsEtc')
+SongReplacements = Thunk(lambda: SongReplacementsAndNeverReplace.value[0],
+                         {SongReplacementsAndNeverReplace}, 'SongReplacements')
+NeverReplace = Thunk(lambda: SongReplacementsAndNeverReplace.value[1],
+                     {SongReplacementsAndNeverReplace}, 'NeverReplace')
 
-# ___________________ Sundays and Songs ___________________
+def ReturnMaybeReplace():
+    def maybereplacesong(song):
+        asong = SongReplacements.value.get(song,song)
+#        if asong in NotSongs.value:           # cyclic dependency
+#            print("You have a 'songreplacement' replacing a song with something that's listed in your 'not songs'.")
+#            print("Why not just list the original in the 'not songs' set?")
+#            print(song)
+#            print(asong)
+        return asong
+    return maybereplacesong
 
-sundays = defaultdict(list)
-songs = defaultdict(list)
+MaybeReplaceSong = Thunk(ReturnMaybeReplace, {SongReplacements}, 'MaybeReplaceSong')
 
-def songsIn(pathtosongset):
+# ____________________________________________________________________________________________________________________ #
+#                      Song Files                                                                                      #
+# ____________________________________________________________________________________________________________________ #
+
+"""
+.d88888b                                 88888888b oo dP                   
+88.    "'                                88           88                   
+`Y88888b. .d8888b. 88d888b. .d8888b.    a88aaaa    dP 88 .d8888b. .d8888b. 
+      `8b 88'  `88 88'  `88 88'  `88     88        88 88 88ooood8 Y8ooooo. 
+d8'   .8P 88.  .88 88    88 88.  .88     88        88 88 88.  ...       88 
+ Y88888P  `88888P' dP    dP `8888P88     dP        dP dP `88888P' `88888P' 
+                                 .88                                       
+                             d8888P                                        
+"""
+
+def rawSongsIn(pathtosongset):                                                     # Thunks: MaybeReplaceSong
    root = ElementTree.parse(pathtosongset).getroot()            #parse xml
    for sg in root.findall("slide_groups/slide_group"): #songs are slide groups
        if sg.get("type") == "song":                    #only songs
-           songname = classes.maybereplacesong(sg.get("name"))
-           yield classes.maybereplacesong(songname)            #yield is return but makes an iterator rather than a standard funtion
+           yield MaybeReplaceSong.value(sg.get("name"))            #yield is return but makes an iterator rather than a standard funtion
 
-notnew   = [song for song in songsIn(config.notnewpath)]
-notsongs = [song for song in songsIn(config.notsongspath)]
+NotSongs = Thunk(lambda: {song for song in rawSongsIn(config.notsongspath)}, {MaybeReplaceSong}, name='NotSongs')
 
-for file in sundayFiles:
-    sunday = classes.getdate(os.path.basename(file))            #get date from filename
-    for song in songsIn(file):
-        if song not in notsongs:
+
+def CalcSundayFileNames():
+    sundayFiles = glob.glob(config.oldsetsglob)
+    sundayFiles.extend(glob.glob(config.newsetsglob))
+    return sundayFiles
+SundayFileNames = Thunk(CalcSundayFileNames, set(), name='SundayFileNames')
+
+SongFileNames = Thunk(lambda: glob.glob(config.songglob), set(), name='SongFileNames')
+
+ActualSongFiles = Thunk(lambda:
+                        [song for song in (os.path.basename(file)
+                                           for file in SongFileNames.value)
+                         if song not in NotSongs.value],
+                        {SongFileNames, NotSongs}, name='ActualSongFiles')
+
+OKSongSet = Thunk(lambda :{MaybeReplaceSong.value(song) for song in ActualSongFiles.value}.difference(NotSongs.value),
+                  {ActualSongFiles,MaybeReplaceSong}, name='OKSongSet')
+
+def CalculateSongListFromFilesWithReplacementsAndNoNotSongs():
+    return list(sorted(OKSongSet.value))
+
+OKSongList = Thunk(CalculateSongListFromFilesWithReplacementsAndNoNotSongs,
+                   {OKSongSet}, name='OKSongList')
+
+
+
+
+# ____________________________________________________________________________________________________________________ #
+#                      Sundays and Songs                                                                               #
+# ____________________________________________________________________________________________________________________ #
+
+"""
+.d88888b                          dP                                 d8' .d88888b                                      
+88.    "'                         88                                d8'  88.    "'                                     
+`Y88888b. dP    dP 88d888b. .d888b88 .d8888b. dP    dP .d8888b.    d8'   `Y88888b. .d8888b. 88d888b. .d8888b. .d8888b. 
+      `8b 88    88 88'  `88 88'  `88 88'  `88 88    88 Y8ooooo.   d8'          `8b 88'  `88 88'  `88 88'  `88 Y8ooooo. 
+d8'   .8P 88.  .88 88    88 88.  .88 88.  .88 88.  .88       88  d8'     d8'   .8P 88.  .88 88    88 88.  .88       88 
+ Y88888P  `88888P' dP    dP `88888P8 `88888P8 `8888P88 `88888P' 88        Y88888P  `88888P' dP    dP `8888P88 `88888P' 
+                                                   .88                                                    .88          
+                                               d8888P                                                 d8888P           
+"""
+
+def songsIn(pathtosongset):                                                     # Thunks: MaybeReplaceSong
+   root = ElementTree.parse(pathtosongset).getroot()            #parse xml
+   for sg in root.findall("slide_groups/slide_group"): #songs are slide groups
+       if sg.get("type") == "song":                    #only songs
+           name = MaybeReplaceSong.value(sg.get("name"))
+           if name not in NotSongs.value:
+               yield name            #yield is return but makes an iterator rather than a standard funtion
+
+NotNew = Thunk(lambda: {song for song in songsIn(config.notnewpath)}, {MaybeReplaceSong}, name='NotNew')
+
+def CalculateSundaysAndSongs():
+
+    sundays = defaultdict(list)
+    songs = defaultdict(list)
+    for song in OKSongList.value:
+        songs[song]=[]
+    used = set()
+
+    for file in SundayFileNames.value:
+        sunday = classes.getdate(os.path.basename(file))            #get date from filename
+        for song in songsIn(file):
             sundays[sunday].append(song)            #this sunday we sang this song
             songs[song].append(sunday)              #we sang this song this sunday
+            used.add(song)
+
+    return sundays, songs, used
+
+SundaysAndSongs = Thunk(CalculateSundaysAndSongs, {OKSongList}, name='SundaysAndSongs')
+SundaySongs = Thunk(lambda: SundaysAndSongs.value[0], {SundaysAndSongs}, name='SundaySongs')
+SongSundays = Thunk(lambda: SundaysAndSongs.value[1], {SundaysAndSongs}, name='SongSundays')
+UsedSongs = Thunk(lambda: SundaysAndSongs.value[2], {SundaysAndSongs}, name='UsedSongs')
+
+# ____________________________________________________________________________________________________________________ #
+#                      PLain Song Lists                                                                                #
+# ____________________________________________________________________________________________________________________ #
+
+"""
+ 888888ba  dP          oo                                                    dP oo            dP            
+ 88    `8b 88                                                                88               88            
+a88aaaa8P' 88 .d8888b. dP 88d888b.    .d8888b. .d8888b. 88d888b. .d8888b.    88 dP .d8888b. d8888P .d8888b. 
+ 88        88 88'  `88 88 88'  `88    Y8ooooo. 88'  `88 88'  `88 88'  `88    88 88 Y8ooooo.   88   Y8ooooo. 
+ 88        88 88.  .88 88 88    88          88 88.  .88 88    88 88.  .88    88 88       88   88         88 
+ dP        dP `88888P8 dP dP    dP    `88888P' `88888P' dP    dP `8888P88    dP dP `88888P'   dP   `88888P' 
+                                                                      .88                                   
+                                                                  d8888P                                    
+"""
+SongsWithoutSongFiles = Thunk(lambda: [song for song in sorted(SongSundays.value)
+                                       if song not in OKSongSet.value],
+                              {OKSongList, SongSundays}, name='SongsWithoutSongFiles')
+
+def CheckForMissingSongs():
+    if SongsWithoutSongFiles.value:
+        print('_____________________ Missing songs report ____________________')
+        print('   There are no actual song files for the following songs.     ')
+        print('Please complete the lines below and save in songreplacements.py')
+        for song in SongsWithoutSongFiles.value:
+            print('"'+song+'":"",')
+        print('_______________________________________________________________')
+        print('You could run wwwlocal() and then open MissingSongs.html')
+        print('______________ End of missing songs report ____________________')
 
 
-# ________________________ Tables ___________________________
+AnyOldSongFiles = Thunk(lambda:
+                        [song for song in (os.path.basename(file) for file in SongFileNames.value)],
+                        {SongFileNames}, name='AnyOldSongFiles')
 
-actualSongFiles = [song for song in
-                   (os.path.basename(file) for file in songFiles)
-                   if song not in notsongs]
+SongsWithNumbers = Thunk(lambda:
+                         [song for song in OKSongList.value if classes.hasNumber(song)],
+                         {OKSongList}, name='SongsWithNumbers')
 
-songListFromFiles = list(map(classes.maybereplacesong, actualSongFiles))
+SongsWithoutNumbers = Thunk(lambda:
+                            [song for song in OKSongList.value if not classes.hasNumber(song)],
+                            {OKSongList}, name='SongsWithoutNumbers')
 
-songsWithoutSongFiles = [song for song in sorted(songs)
-                         if song not in songListFromFiles]
 
-if songsWithoutSongFiles:
-    print('_____________________ Missing songs report ____________________')
-    print('   There are no actual song files for the following songs.     ')
-    print('Please complete the lines below and save in songreplacements.py')
-    for song in songsWithoutSongFiles:
-        print('"'+song+'":"",')
-    print('_______________________________________________________________')
-    print('You could run wwwlocal() and then open MissingSongs.html')
-    print('______________ End of missing songs report ____________________')
+SongsUndealtWithWithoutNumbers = Thunk(lambda:
+                                       [song for song in SongsWithoutNumbers.value
+                                        if song not in NotSongs.value
+                                        and song not in SongReplacements.value],
+                                       {NotSongs, SongsWithoutNumbers}, name='SongsUndealtWithWithoutNumbers')
 
 
 
-ourSongsTable = [classes.SongHistory(song) for song in sorted(songs)]
-for song in songListFromFiles:                              #Add songs that haven't been used
-    if not song in songs and song not in notsongs:
-        songs[song]=[]
-allSongsTable = [classes.SongHistory(song) for song in sorted(songs)]
-sundayTable = []
-for date in reversed(sorted(sundays.keys())):
-    sundayTable.extend([classes.SongOnDate(song, date) for song in sundays[date]])
 
-# _____________________ songContents __________________________
+# ____________________________________________________________________________________________________________________ #
+#                      Song History Tables and Sunday Table                                                            #
+# ____________________________________________________________________________________________________________________ #
+
+"""
+.d88888b                                dP       oo            dP                              
+88.    "'                               88                     88                              
+`Y88888b. .d8888b. 88d888b. .d8888b.    88d888b. dP .d8888b. d8888P .d8888b. 88d888b. dP    dP 
+      `8b 88'  `88 88'  `88 88'  `88    88'  `88 88 Y8ooooo.   88   88'  `88 88'  `88 88    88 
+d8'   .8P 88.  .88 88    88 88.  .88    88    88 88       88   88   88.  .88 88       88.  .88 
+ Y88888P  `88888P' dP    dP `8888P88    dP    dP dP `88888P'   dP   `88888P' dP       `8888P88 
+                                 .88                                                       .88 
+                             d8888P                                                    d8888P  
+"""
+
+OurSongsTable = Thunk(lambda: [classes.SongHistory(song) for song in OKSongList.value if song in UsedSongs.value],
+                      {SongSundays}, name='OurSongsTable')
+
+AllSongsTable = Thunk(lambda:[classes.SongHistory(song) for song in OKSongList.value],
+                      {OKSongList, NotSongs, SongSundays}, name='AllSongsTable')
+
+def CalculateSundayTable():
+    sundayTable = []
+    for date in reversed(sorted(SundaySongs.value.keys())):
+        sundayTable.extend([classes.SongOnDate(song, date) for song in SundaySongs.value[date]])
+    return sundayTable
+
+SundayTable = Thunk(CalculateSundayTable, {SundaySongs}, name='SundayTable')
+
+SongListFromSetsWithoutNumbers = Thunk(lambda:
+                                       [song.songfilename for song in OurSongsTable.value if song.songnumber == ''],
+                                       {OurSongsTable}, name='SongListFromSetsWithoutNumbers')
+
+
+# ____________________________________________________________________________________________________________________ #
+#                      Song Contents                                                                                   #
+# ____________________________________________________________________________________________________________________ #
+
+"""
+.d88888b                                 a88888b.                     dP                       dP            
+88.    "'                               d8'   `88                     88                       88            
+`Y88888b. .d8888b. 88d888b. .d8888b.    88        .d8888b. 88d888b. d8888P .d8888b. 88d888b. d8888P .d8888b. 
+      `8b 88'  `88 88'  `88 88'  `88    88        88'  `88 88'  `88   88   88ooood8 88'  `88   88   Y8ooooo. 
+d8'   .8P 88.  .88 88    88 88.  .88    Y8.   .88 88.  .88 88    88   88   88.  ... 88    88   88         88 
+ Y88888P  `88888P' dP    dP `8888P88     Y88888P' `88888P' dP    dP   dP   `88888P' dP    dP   dP   `88888P' 
+                                 .88                                                                         
+                             d8888P                                                                          
+"""
 
 def blankSongContent():
     return classes.SongContent("blank", "blank", "blank")
 
 
-songContents = defaultdict(blankSongContent)
-for file in songFiles:
-    song = os.path.basename(file)
-    songContents[song] = classes.SongContent(file)
+def CalculateSongContents():
+    songContents = defaultdict(blankSongContent)
+    for file in SongFileNames.value:
+        song = os.path.basename(file)
+        songContents[song] = classes.SongContent(file)
+    for song in SongsWithoutSongFiles.value:
+        songContents[song]=classes.SongContent(song, song, "???\n<br>Sorry, no content.\n<br>???\n<br>If there were content for this song on disk,\n<br>it wouldn't be in this list!\n<br>???")
+    return songContents
+
+SongContents = Thunk(CalculateSongContents, {SongFileNames, SongsWithoutSongFiles}, name='SongContents')
 
 
+# ____________________________________________________________________________________________________________________ #
+#                      Song Matches                                                                                    #
+# ____________________________________________________________________________________________________________________ #
 
-songListFromFiles = [song for song in(
-                                 os.path.basename(file)
-                                 for file in songFiles
-                                  )]
-songListApproved = [song for song in songListFromFiles
-                    if song not in classes.songreplacements.keys()]
-
-songsWithNumbers = [song for song in songListFromFiles if classes.hasNumber(song)]
-songsWithoutNumbers = [song for song in songListFromFiles if not classes.hasNumber(song)]
-
-songListFromSetsWithoutNumbers = [song.songfilename
-                                  for song in ourSongsTable
-                                  if song.songnumber == '']
-
-songsUndealtWithWithoutNumbers = [song for song in songsWithoutNumbers
-                                  if song not in notsongs
-                                  and song not in classes.songreplacements.keys()]
-
-
-missingSongPretendSongfiles = defaultdict(blankSongContent)
-for song in songsWithoutSongFiles:
-    songContents[song]=classes.SongContent(song, song, "???\n<br>Sorry, no content.\n<br>???\n<br>If there were content for this song on disk,\n<br>it wouldn't be in this list!\n<br>???")
-
-
-# _____________ Hash Matches _______________
-
+"""
+.d88888b                                8888ba.88ba             dP            dP                         
+88.    "'                               88  `8b  `8b            88            88                         
+`Y88888b. .d8888b. 88d888b. .d8888b.    88   88   88 .d8888b. d8888P .d8888b. 88d888b. .d8888b. .d8888b. 
+      `8b 88'  `88 88'  `88 88'  `88    88   88   88 88'  `88   88   88'  `"" 88'  `88 88ooood8 Y8ooooo. 
+d8'   .8P 88.  .88 88    88 88.  .88    88   88   88 88.  .88   88   88.  ... 88    88 88.  ...       88 
+ Y88888P  `88888P' dP    dP `8888P88    dP   dP   dP `88888P8   dP   `88888P' dP    dP `88888P' `88888P' 
+                                 .88                                                                     
+                             d8888P                                                                      
+"""
 
 def blankMatch():
     return classes.Match()
 
-# Matches from SongSets
-matches = defaultdict(blankMatch)
+# TODO: This repeats the file access of the Sundays and Songs. Rewrite it.
 
-for file in sundayFiles:
-    root = ElementTree.parse(file).getroot()            #parse xml
-    for sg in root.findall("slide_groups/slide_group"): #songs are slide groups
-        if sg.get("type") == "song":                    #only
-            song = sg.get("name")
-            matches[classes.songhash(song)].addFromSongSet(song, file)          #this sunday we sang this song
+def CalcMatches():
 
-# Matches from SongFiles
-for file in songFiles:                              #Add songs that haven't been used
-    sh=classes.songhash(os.path.basename(file))
-    matches[sh].addFromSongFile(file)
+    # Matches from SongSets
+    matches = defaultdict(blankMatch)
+
+    for file in SundayFileNames.value:
+        root = ElementTree.parse(file).getroot()            #parse xml
+        for sg in root.findall("slide_groups/slide_group"): #songs are slide groups
+            if sg.get("type") == "song":                    #only
+                song = sg.get("name")
+                matches[classes.songhash(song)].addFromSongSet(song, file)          #this sunday we sang this song
+
+    # Matches from SongFileNames
+    for file in SongFileNames.value:                              #Add songs that haven't been used
+        sh=classes.songhash(os.path.basename(file))
+        matches[sh].addFromSongFile(file)
+    return [match for match in matches.values()
+                if len(match.songfilenames) > 1]
 
 
-maybematches = [ match for sh, match in matches.items()
-                 if len(match.songfilenames)>1 ]
+Matches = Thunk(CalcMatches, {}, name='Matches')
+

@@ -1,6 +1,5 @@
 # Copyright 2019 Andrew Clow GPLv3 (see COPYING.txt)
-
-
+from collections import defaultdict
 from mako.lookup import TemplateLookup
 
 import config
@@ -8,6 +7,8 @@ import songlists
 import classes
 import shutil
 import where
+
+from thunk import *
 
 # __________________ CONFIGURATION _________________
 
@@ -168,7 +169,7 @@ class ListPage(Saveable):
                  button,  # Use "Date" and "-Date" for the forwards and backwards versions
                  sortfunction,  # Lambda to return the field tuple to sort on
                  usereversed,  # Should we reverse after using the sortfunction?
-                 hasDates,  # True to use sundayTable, false to put blanks in the New and Date columns
+                 hasDates,  # True to use SundayTable.value, false to put blanks in the New and Date columns
                  underlyingTable,  # Underlying table of SongHistory or SongOnDate
                  onlyif=lambda x: True,  # Lambda to keep records
                  template="ListPageTemplate.html",  # override if needed
@@ -203,83 +204,83 @@ class ListPage(Saveable):
 
 listPages = {
     "Date":ListPage(button="Date",
-             underlyingTable=songlists.sundayTable,
-             sortfunction=None,
-             usereversed=False,
-             hasDates=True),
+                    underlyingTable=songlists.SundayTable.value,
+                    sortfunction=None,
+                    usereversed=False,
+                    hasDates=True),
     "-Date":ListPage(button="-Date",
-             underlyingTable=songlists.sundayTable,
-             sortfunction=lambda x: x.date,  # Weirdly, this does the right thing
-             usereversed=False,  # when we don't reverse it
-             hasDates=True),
+                     underlyingTable=songlists.SundayTable.value,
+                     sortfunction=lambda x: x.date,  # Weirdly, this does the right thing
+                     usereversed=False,  # when we don't reverse it
+                     hasDates=True),
     "New":ListPage(button="New",
-             underlyingTable=songlists.sundayTable,
-             sortfunction=lambda x: (x.date, x.songfilename.lower()),
-             usereversed=True,
-             onlyif=lambda x: x.newToday.lower() == "new",
-             hasDates=True),
+                   underlyingTable=songlists.SundayTable.value,
+                   sortfunction=lambda x: (x.date, x.songfilename.lower()),
+                   usereversed=True,
+                   onlyif=lambda x: x.newToday.lower() == "new",
+                   hasDates=True),
     "-New":ListPage(button="-New",
-             underlyingTable=songlists.sundayTable,
-             sortfunction=lambda x: (x.date, x.songfilename.lower()),
-             usereversed=False,
-             onlyif=lambda x: x.newToday.lower() == "new",
-             hasDates=True),
+                    underlyingTable=songlists.SundayTable.value,
+                    sortfunction=lambda x: (x.date, x.songfilename.lower()),
+                    usereversed=False,
+                    onlyif=lambda x: x.newToday.lower() == "new",
+                    hasDates=True),
     "Song":ListPage(button="Song",
-             underlyingTable=songlists.allSongsTable,
-             sortfunction=lambda x: x.songtitle.lower(),
-             usereversed=False,
-             hasDates=False),
+                    underlyingTable=songlists.AllSongsTable.value,
+                    sortfunction=lambda x: x.songtitle.lower(),
+                    usereversed=False,
+                    hasDates=False),
     "-Song":ListPage(button="-Song",
-             underlyingTable=songlists.allSongsTable,
-             sortfunction=lambda x: x.songtitle.lower(),
-             usereversed=True,
-             hasDates=False),
+                     underlyingTable=songlists.AllSongsTable.value,
+                     sortfunction=lambda x: x.songtitle.lower(),
+                     usereversed=True,
+                     hasDates=False),
     "No.":ListPage(button="No.",
-             underlyingTable=songlists.allSongsTable,
-             sortfunction=lambda x: x.songnumber + "zzzzzz" + x.songtitle.lower(),
-             usereversed=False,
-             hasDates=False),
+                   underlyingTable=songlists.AllSongsTable.value,
+                   sortfunction=lambda x: x.songnumber + "zzzzzz" + x.songtitle.lower(),
+                   usereversed=False,
+                   hasDates=False),
     "-No.":ListPage(button="-No.",
-             underlyingTable=songlists.allSongsTable,
-             sortfunction=lambda x: x.songnumber + "zzzzzz" + x.songtitle.lower(),
-             usereversed=True,
-             hasDates=False),
+                    underlyingTable=songlists.AllSongsTable.value,
+                    sortfunction=lambda x: x.songnumber + "zzzzzz" + x.songtitle.lower(),
+                    usereversed=True,
+                    hasDates=False),
     "Non-SoF new":ListPage(button="Non-SoF new",
-             underlyingTable=songlists.sundayTable,
-             sortfunction=lambda x: (x.date, x.songfilename.lower()),
-             usereversed=True,
-             onlyif=lambda x: x.newToday.lower() == "new" and x.songnumber == '',
-             hasDates=True),
+                           underlyingTable=songlists.SundayTable.value,
+                           sortfunction=lambda x: (x.date, x.songfilename.lower()),
+                           usereversed=True,
+                           onlyif=lambda x: x.newToday.lower() == "new" and x.songnumber == '',
+                           hasDates=True),
     "December":ListPage(button="December",
-             underlyingTable=songlists.sundayTable,
-             sortfunction=None,
-             usereversed=False,
-             onlyif=lambda x: x.date.isoformat()[4:8] == "-12-",
-             hasDates=True),
+                        underlyingTable=songlists.SundayTable.value,
+                        sortfunction=None,
+                        usereversed=False,
+                        onlyif=lambda x: x.date.isoformat()[4:8] == "-12-",
+                        hasDates=True),
 }
 
 for period in classes.datePeriods:
     listPages.update({
         period:ListPage(
             button=period,
-            underlyingTable=songlists.allSongsTable,
+            underlyingTable=songlists.AllSongsTable.value,
             sortfunction=sortFunctionFromPeriod(period),
             usereversed=True,
             hasDates=False),
     '-'+period:ListPage(
         button='-'+period,
-        underlyingTable=songlists.allSongsTable,
+        underlyingTable=songlists.AllSongsTable.value,
         sortfunction=sortFunctionFromPeriod(period),
         usereversed=False,
         hasDates=False)})
 if None==3:
     listPages.update({
         "Test":ListPage(button="Test",
-             template="test.html",
-             underlyingTable=songlists.sundayTable,
-             sortfunction=None,
-             usereversed=True,
-             hasDates=True)
+                        template="test.html",
+                        underlyingTable=songlists.SundayTable.value,
+                        sortfunction=None,
+                        usereversed=True,
+                        hasDates=True)
     })
 
 
@@ -330,12 +331,13 @@ homePages = {button:Saveable(button, pagecontent)
 #    print('output:\t' + songlists.os.path.basename(outputfilepath))
 
 
+missingSongPretendSongfiles = defaultdict(songlists.blankSongContent)
 
 
 songtextPages = {
     "Search":Saveable("Search",
-             apply_template("SongSearchTemplate.html", songlist=songlists.songListApproved,
-                            songContents=songlists.songContents, numberFromFileName=classes.numberFromFileName,
+             apply_template("SongSearchTemplate.html", songlist=songlists.OKSongList.value,
+                            songContents=songlists.SongContents.value, numberFromFileName=classes.numberFromFileName,
                             pagetitle="Search the full text of songs", bookColour=config.bookColour,
                             bookNo=classes.bookNo)),
     "Song Text Home":Saveable("Song Text Home",
@@ -348,44 +350,44 @@ songtextPages = {
 privatePages = {
     "Missing":Saveable("Missing",
              apply_template("MatchSongsTemplate.html",
-                            fromsongs=songlists.songsWithoutSongFiles,
-                            tosongs=songlists.songListFromFiles,
-                            songContents=dict(songlists.songContents,
-                                              **songlists.missingSongPretendSongfiles),
+                            fromsongs=songlists.SongsWithoutSongFiles.value,
+                            tosongs=songlists.OKSongList.value,
+                            songContents=dict(songlists.SongContents.value,
+                                              **missingSongPretendSongfiles),
                             pagetitle="Missing songs: match up with actual songs and add to songreplacements.py"),
              private=True),
 
     "Numbered":Saveable("Numbered",
              apply_template("SongContentsTemplate.html",
-                            songlist=songlists.songsWithNumbers,
-                            songContents=songlists.songContents,
+                            songlist=songlists.SongsWithNumbers.value,
+                            songContents=songlists.SongContents.value,
                             pagetitle="Song Content for all songs with numbers",
                             alter=lambda song: '"' + song + '",'),
              private=True),
     "Numberless":Saveable("Numberless",
              apply_template("SongContentsTemplate.html",
-                            songlist=songlists.songListFromSetsWithoutNumbers,
-                            songContents=songlists.songContents,
+                            songlist=songlists.SongListFromSetsWithoutNumbers.value,
+                            songContents=songlists.SongContents.value,
                             pagetitle="Songs without numbers we've used",
                             alter=lambda song: '"' + song + '":'),
              private=True),
     "Match Unnumbered":Saveable("Match Unnumbered",
              apply_template("MatchSongsTemplate.html",
-                            fromsongs=songlists.songListFromSetsWithoutNumbers,
-                            tosongs=songlists.songsWithNumbers,
-                            songContents=songlists.songContents,
+                            fromsongs=songlists.SongListFromSetsWithoutNumbers.value,
+                            tosongs=songlists.SongsWithNumbers.value,
+                            songContents=songlists.SongContents.value,
                             pagetitle="Match up unnumbered songs"),
              private=True),
     "Undealt With":Saveable("Undealt With",
              apply_template("MatchSongsTemplate.html",
-                            fromsongs=songlists.songsUndealtWithWithoutNumbers,
-                            tosongs=songlists.songsWithNumbers,
-                            songContents=songlists.songContents,
+                            fromsongs=songlists.SongsUndealtWithWithoutNumbers.value,
+                            tosongs=songlists.SongsWithNumbers.value,
+                            songContents=songlists.SongContents.value,
                             pagetitle="Match up undealt with unnumbered songs"),
              private=True),
     "Match Similar Songnames":Saveable("Match Similar Songnames",
              apply_template("MatchSimilarSongnamesTemplate.html",
-                            maybematches=songlists.maybematches,
+                            maybematches=songlists.Matches.value,
                             pagetitle="Match songs with similar Songnames"),
              private=True)
 }

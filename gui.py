@@ -4,6 +4,7 @@ import PySimpleGUI as sg
 
 import relativelocation
 import where
+import songlists
 
 justtesting=False
 if not justtesting:
@@ -16,8 +17,8 @@ else:
             self.content='Content of {0} page'.format(btn)
             self.private = pvt
             if '/' in btn:
-                (dir,fname) = btn.split('/')
-                self.location = relativelocation.RelativeLocation(dir+'/',btn+'.html')
+                (d,f) = btn.split('/')
+                self.location = relativelocation.RelativeLocation(d+'/',btn+'.html')
             else:
                 self.location = relativelocation.RelativeLocation('',btn+'.html')
         def save(self,customoutputprefixes=None):
@@ -34,7 +35,8 @@ else:
     privatePages = {'SongMatch':S('SongMatch',True),'SongComparison':S('SongComparison',True),'SongCompare':S('SongCompare',True)}
 
     def saveAuxFiles(outputprefixes):
-        return ['jquery-currentversion.js','various.css','songtext/other.css','songtext/other.js']
+        if outputprefixes == outputprefixes:
+            return ['jquery-currentversion.js','various.css','songtext/other.css','songtext/other.js']
 
     # end of justtesting bit
 
@@ -44,6 +46,13 @@ else:
 (listpageButtons,homepageButtons,songtextPageButtons,privatePageButtons) = \
      ([s.button for s in somepages.values()] for somepages in (listPages, homePages, songtextPages, privatePages))
 
+buttonLists = {
+    'listpageButtons':listpageButtons,
+    'homepageButtons':homepageButtons,
+    'songtextPageButtons':songtextPageButtons,
+    'privatePageButtons':privatePageButtons
+}
+
 leftcol = [
     [sg.Text('Song list pages')],
     [sg.Listbox(values=listpageButtons,
@@ -51,7 +60,7 @@ leftcol = [
                 select_mode=sg.LISTBOX_SELECT_MODE_MULTIPLE,
                 size=(25,len(listpageButtons)),
                 key='listpageButtons')],
-    [sg.Button('Clear', key='Clear:listpageButtons')],  # ,sg.Button('All',key='All:listPages')],
+    [sg.Button('Clear', key='Clear:listpageButtons') ,sg.Button('All',key='All:listpageButtons')],
     [],
     [sg.Text('Home pages')],
     [sg.Listbox(values=homepageButtons,
@@ -121,6 +130,8 @@ def savewith(values):
             for place in places:
                 printmsg('\t'+place)
             # window.Element(part).SetValue(p)      # It'd be lovely if that worked, but it doesn't update the last one in each listbox.
+                                                    # Ah, no SetValue(elt) turns it on, so this turns them on in sequence ending with the last.
+                                                    # You can SetValue(remainingItemsList) if you like.
     printmsg('Auxiliary files:')
     for place in saveAuxFiles(values['customoutputprefixes']):
         printmsg('\t'+place)
@@ -129,12 +140,17 @@ def savewith(values):
     printmsg('')
 
 
+window.Show()
+songlists.CheckForMissingSongs()    # TODO: make this a GUI thing!
 while True:
     event, values = window.Read()
     if event is None or event == 'Exit':
         break
     elif event[0:6] == 'Clear:':
         window.Element(event[6:]).SetValue([])
+    elif event[0:4] == 'All:':
+        print(buttonLists[event[4:]][2])
+        window.Element(event[4:]).Update(set_to_index=buttonLists[event[4:]][3])
     elif event == 'Generate webpages':
         savewith(values)
 

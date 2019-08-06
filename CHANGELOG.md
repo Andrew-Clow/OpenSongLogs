@@ -1,3 +1,15 @@
+# 1.2.1
+
+## Thunks
+
+A thunk is a promised value that's calculated when it's first needed,
+then stored for subsequent use. Google lazy evaluation.
+
+Anyway, I've called them thunks because I couldn't think of a better name.
+My thunks can be told to recalculate. At this point, I'm not using that 
+functionality, but this was a big rewrite, so I'm committing at this point
+and bumping the version number a bit.
+
 # 1.2.0
 
 ## GUI is here!
