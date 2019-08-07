@@ -29,11 +29,11 @@ def LoadSongReplacementsEtc():
     return songreplacements,neverreplace
 
 
-SongReplacementsAndNeverReplace = Thunk(LoadSongReplacementsEtc, {}, 'SongReplacementsEtc')
+SongReplacementsAndNeverReplace = Thunk(LoadSongReplacementsEtc, set(), 'SongReplacementsEtc')
 SongReplacements = Thunk(lambda: SongReplacementsAndNeverReplace.value[0],
-                         {SongReplacementsAndNeverReplace}, 'SongReplacements')
+                         [SongReplacementsAndNeverReplace], 'SongReplacements')
 NeverReplace = Thunk(lambda: SongReplacementsAndNeverReplace.value[1],
-                     {SongReplacementsAndNeverReplace}, 'NeverReplace')
+                     [SongReplacementsAndNeverReplace], 'NeverReplace')
 
 def ReturnMaybeReplace():
     def maybereplacesong(song):
@@ -46,7 +46,7 @@ def ReturnMaybeReplace():
         return asong
     return maybereplacesong
 
-MaybeReplaceSong = Thunk(ReturnMaybeReplace, {SongReplacements}, 'MaybeReplaceSong')
+MaybeReplaceSong = Thunk(ReturnMaybeReplace, [SongReplacements], 'MaybeReplaceSong')
 
 # ____________________________________________________________________________________________________________________ #
 #                      Song Files                                                                                      #
@@ -69,7 +69,7 @@ def rawSongsIn(pathtosongset):                                                  
        if sg.get("type") == "song":                    #only songs
            yield MaybeReplaceSong.value(sg.get("name"))            #yield is return but makes an iterator rather than a standard funtion
 
-NotSongs = Thunk(lambda: {song for song in rawSongsIn(config.notsongspath)}, {MaybeReplaceSong}, name='NotSongs')
+NotSongs = Thunk(lambda: {song for song in rawSongsIn(config.notsongspath)}, [MaybeReplaceSong], name='NotSongs')
 
 
 def CalcSundayFileNames():
@@ -84,16 +84,16 @@ ActualSongFiles = Thunk(lambda:
                         [song for song in (os.path.basename(file)
                                            for file in SongFileNames.value)
                          if song not in NotSongs.value],
-                        {SongFileNames, NotSongs}, name='ActualSongFiles')
+                        [SongFileNames, NotSongs], name='ActualSongFiles')
 
 OKSongSet = Thunk(lambda :{MaybeReplaceSong.value(song) for song in ActualSongFiles.value}.difference(NotSongs.value),
-                  {ActualSongFiles,MaybeReplaceSong}, name='OKSongSet')
+                  [ActualSongFiles,MaybeReplaceSong], name='OKSongSet')
 
 def CalculateSongListFromFilesWithReplacementsAndNoNotSongs():
     return list(sorted(OKSongSet.value))
 
 OKSongList = Thunk(CalculateSongListFromFilesWithReplacementsAndNoNotSongs,
-                   {OKSongSet}, name='OKSongList')
+                   [OKSongSet], name='OKSongList')
 
 
 
@@ -121,7 +121,7 @@ def songsIn(pathtosongset):                                                     
            if name not in NotSongs.value:
                yield name            #yield is return but makes an iterator rather than a standard funtion
 
-NotNew = Thunk(lambda: {song for song in songsIn(config.notnewpath)}, {MaybeReplaceSong}, name='NotNew')
+NotNew = Thunk(lambda: {song for song in songsIn(config.notnewpath)}, [MaybeReplaceSong], name='NotNew')
 
 def CalculateSundaysAndSongs():
 
@@ -140,10 +140,10 @@ def CalculateSundaysAndSongs():
 
     return sundays, songs, used
 
-SundaysAndSongs = Thunk(CalculateSundaysAndSongs, {OKSongList}, name='SundaysAndSongs')
-SundaySongs = Thunk(lambda: SundaysAndSongs.value[0], {SundaysAndSongs}, name='SundaySongs')
-SongSundays = Thunk(lambda: SundaysAndSongs.value[1], {SundaysAndSongs}, name='SongSundays')
-UsedSongs = Thunk(lambda: SundaysAndSongs.value[2], {SundaysAndSongs}, name='UsedSongs')
+SundaysAndSongs = Thunk(CalculateSundaysAndSongs, [OKSongList], name='SundaysAndSongs')
+SundaySongs = Thunk(lambda: SundaysAndSongs.value[0], [SundaysAndSongs], name='SundaySongs')
+SongSundays = Thunk(lambda: SundaysAndSongs.value[1], [SundaysAndSongs], name='SongSundays')
+UsedSongs = Thunk(lambda: SundaysAndSongs.value[2], [SundaysAndSongs], name='UsedSongs')
 
 # ____________________________________________________________________________________________________________________ #
 #                      PLain Song Lists                                                                                #
@@ -161,7 +161,7 @@ a88aaaa8P' 88 .d8888b. dP 88d888b.    .d8888b. .d8888b. 88d888b. .d8888b.    88 
 """
 SongsWithoutSongFiles = Thunk(lambda: [song for song in sorted(SongSundays.value)
                                        if song not in OKSongSet.value],
-                              {OKSongList, SongSundays}, name='SongsWithoutSongFiles')
+                              [OKSongList, SongSundays], name='SongsWithoutSongFiles')
 
 def CheckForMissingSongs():
     if SongsWithoutSongFiles.value:
@@ -177,22 +177,22 @@ def CheckForMissingSongs():
 
 AnyOldSongFiles = Thunk(lambda:
                         [song for song in (os.path.basename(file) for file in SongFileNames.value)],
-                        {SongFileNames}, name='AnyOldSongFiles')
+                        [SongFileNames], name='AnyOldSongFiles')
 
 SongsWithNumbers = Thunk(lambda:
                          [song for song in OKSongList.value if classes.hasNumber(song)],
-                         {OKSongList}, name='SongsWithNumbers')
+                         [OKSongList], name='SongsWithNumbers')
 
 SongsWithoutNumbers = Thunk(lambda:
                             [song for song in OKSongList.value if not classes.hasNumber(song)],
-                            {OKSongList}, name='SongsWithoutNumbers')
+                            [OKSongList], name='SongsWithoutNumbers')
 
 
 SongsUndealtWithWithoutNumbers = Thunk(lambda:
                                        [song for song in SongsWithoutNumbers.value
                                         if song not in NotSongs.value
                                         and song not in SongReplacements.value],
-                                       {NotSongs, SongsWithoutNumbers}, name='SongsUndealtWithWithoutNumbers')
+                                       [NotSongs, SongsWithoutNumbers], name='SongsUndealtWithWithoutNumbers')
 
 
 
@@ -213,10 +213,10 @@ d8'   .8P 88.  .88 88    88 88.  .88    88    88 88       88   88   88.  .88 88 
 """
 
 OurSongsTable = Thunk(lambda: [classes.SongHistory(song) for song in OKSongList.value if song in UsedSongs.value],
-                      {SongSundays}, name='OurSongsTable')
+                      [SongSundays], name='OurSongsTable')
 
 AllSongsTable = Thunk(lambda:[classes.SongHistory(song) for song in OKSongList.value],
-                      {OKSongList, NotSongs, SongSundays}, name='AllSongsTable')
+                      [OKSongList, NotSongs, SongSundays], name='AllSongsTable')
 
 def CalculateSundayTable():
     sundayTable = []
@@ -224,11 +224,11 @@ def CalculateSundayTable():
         sundayTable.extend([classes.SongOnDate(song, date) for song in SundaySongs.value[date]])
     return sundayTable
 
-SundayTable = Thunk(CalculateSundayTable, {SundaySongs}, name='SundayTable')
+SundayTable = Thunk(CalculateSundayTable, [SundaySongs], name='SundayTable')
 
 SongListFromSetsWithoutNumbers = Thunk(lambda:
                                        [song.songfilename for song in OurSongsTable.value if song.songnumber == ''],
-                                       {OurSongsTable}, name='SongListFromSetsWithoutNumbers')
+                                       [OurSongsTable], name='SongListFromSetsWithoutNumbers')
 
 
 # ____________________________________________________________________________________________________________________ #
@@ -259,7 +259,7 @@ def CalculateSongContents():
         songContents[song]=classes.SongContent(song, song, "???\n<br>Sorry, no content.\n<br>???\n<br>If there were content for this song on disk,\n<br>it wouldn't be in this list!\n<br>???")
     return songContents
 
-SongContents = Thunk(CalculateSongContents, {SongFileNames, SongsWithoutSongFiles}, name='SongContents')
+SongContents = Thunk(CalculateSongContents, [SongFileNames, SongsWithoutSongFiles], name='SongContents')
 
 
 # ____________________________________________________________________________________________________________________ #

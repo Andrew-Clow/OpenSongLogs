@@ -1,3 +1,14 @@
+# 1.2.2
+
+## Faster startup times, faster for simple pages
+
+Thanks to all the 1.2.1 hard work on the thunks front, the gui can load now
+without calculating all the data for everything that might get saved.
+
+If you just want to save the homepage, it won't take long. 
+
+Still haven't got the recalc thing going yet, but nearer now.
+
 # 1.2.1
 
 ## Thunks

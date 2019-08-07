@@ -5,6 +5,7 @@ import PySimpleGUI as sg
 import relativelocation
 import where
 import songlists
+from thunk import *
 
 justtesting=False
 if not justtesting:
@@ -14,7 +15,7 @@ else:
     class S(object):
         def __init__(self,btn,pvt=False):
             self.button=btn
-            self.content='Content of {0} page'.format(btn)
+            self.content=Thunk(lambda:'Content of {0} page'.format(btn),set(),btn)
             self.private = pvt
             if '/' in btn:
                 (d,f) = btn.split('/')
@@ -60,7 +61,7 @@ leftcol = [
                 select_mode=sg.LISTBOX_SELECT_MODE_MULTIPLE,
                 size=(25,len(listpageButtons)),
                 key='listpageButtons')],
-    [sg.Button('Clear', key='Clear:listpageButtons') ,sg.Button('All',key='All:listpageButtons')],
+    [sg.Button('Clear', key='Clear:listpageButtons'),sg.Button('All',key='All:listpageButtons')],
     [],
     [sg.Text('Home pages')],
     [sg.Listbox(values=homepageButtons,
@@ -68,7 +69,7 @@ leftcol = [
                 select_mode=sg.LISTBOX_SELECT_MODE_MULTIPLE,
                 size=(25,len(homepageButtons)),
                 key='homepageButtons')],
-    [sg.Button('Clear', key='Clear:homepageButtons')],  # ,sg.Button('All',key='All:listPages')],
+    [sg.Button('Clear', key='Clear:homepageButtons'),sg.Button('All',key='All:homepageButtons')],
 ]
 
 middlecol = [
@@ -78,7 +79,7 @@ middlecol = [
                 select_mode=sg.LISTBOX_SELECT_MODE_MULTIPLE,
                 size=(25,len(songtextPageButtons)),
                 key='songtextPageButtons')],
-    [sg.Button('Clear',key='Clear:songtextPageButtons')],#,sg.Button('All',key='All:listPages')],
+    [sg.Button('Clear',key='Clear:songtextPageButtons'),sg.Button('All',key='All:songtextPageButtons')],
     [],
     [sg.Text('Private Pages')],
     [sg.Listbox(values=privatePageButtons,
@@ -86,7 +87,7 @@ middlecol = [
                 select_mode=sg.LISTBOX_SELECT_MODE_MULTIPLE,
                 size=(25, len(privatePageButtons)),
                 key='privatePageButtons')],
-    [sg.Button('Clear', key='Clear:privatePageButtons')],  # ,sg.Button('All',key='All:listPages')],
+    [sg.Button('Clear', key='Clear:privatePageButtons'),sg.Button('All',key='All:privatePageButtons')],
 
 ]
 def spacer(width,height=1):
@@ -123,12 +124,13 @@ def printmsg(msg):
     window.Element('printmsg').Update(window.Element('printmsg').Get()+msg)
 
 def savewith(values):
+    printmsg('Saving non-private pages in:')
+    for place in values['customoutputprefixes']:
+        printmsg('\t'+place)
     for part,pagedict in partmeanings.items():
         for p in values[part]:
-            places = pagedict[p].save(values['customoutputprefixes'])
-            printmsg('{0} saved as {1} in'.format(p,pagedict[p].location.filename))
-            for place in places:
-                printmsg('\t'+place)
+            pagedict[p].save(values['customoutputprefixes'])
+            printmsg('{0} saved as \n\t{1}'.format(p,pagedict[p].location.filename))
             # window.Element(part).SetValue(p)      # It'd be lovely if that worked, but it doesn't update the last one in each listbox.
                                                     # Ah, no SetValue(elt) turns it on, so this turns them on in sequence ending with the last.
                                                     # You can SetValue(remainingItemsList) if you like.
@@ -140,7 +142,7 @@ def savewith(values):
     printmsg('')
 
 
-window.Show()
+#window.Show()
 songlists.CheckForMissingSongs()    # TODO: make this a GUI thing!
 while True:
     event, values = window.Read()
@@ -149,15 +151,9 @@ while True:
     elif event[0:6] == 'Clear:':
         window.Element(event[6:]).SetValue([])
     elif event[0:4] == 'All:':
-        print(buttonLists[event[4:]][2])
-        window.Element(event[4:]).Update(set_to_index=buttonLists[event[4:]][3])
+        window.Element(event[4:]).SetValue(buttonLists[event[4:]])
     elif event == 'Generate webpages':
         savewith(values)
-
-
-#    if event[0:6] == 'All:':
-#        for b in listpageButtons:
-#           window.Element(event[6:]).SetValue([b])         # I can't get this to work. .SetValue(listpageButtons) nor loop .SetValue(b)
 
 
 
