@@ -85,7 +85,7 @@ def saveAs(output, location,customoutputprefixes = None):  # Save in all the out
     for outputprefix in myoutputprefixes:
         with open(location.within(outputprefix), "w", encoding="utf-8") as f:
             print(output, file=f)
-        yield(outputprefix)
+#        yield(outputprefix)
         # print('Saved {0} in {1}'.format(location.filename,location.within("")))
 
 
@@ -111,7 +111,7 @@ class Saveable(object):
         myoutputprefixes = customoutputprefixes or where.outputprefixes
         if self.private:
             myoutputprefixes = where.privateprefixes
-        return saveAs(self.contents.value,self.location,myoutputprefixes)
+        saveAs(self.contents.value,self.location,myoutputprefixes)
 
 # ______________________________________________________________________________________________________________________
 #                         List Pages                                                                                   .
@@ -128,20 +128,24 @@ dP        oo            dP       888888ba
                                                      d8888P                    
 """
 
-def makelistpage(page):
-    if page.usereversed:
-        if page.sortfunction is None:
-            finalTable = filter(page.onlyif, reversed(page.underlyingTable.value))
-        else:
-            finalTable = reversed(sorted(filter(page.onlyif, page.underlyingTable.value),
-                                         key=page.sortfunction))
-    else:
-        if page.sortfunction is None:
-            finalTable = filter(page.onlyif, page.underlyingTable.value)
-        else:
-            finalTable = sorted(filter(page.onlyif, page.underlyingTable.value),
-                                key=page.sortfunction)
 
+
+def makelistpage(page):
+    def choosefinaltable():
+        if page.usereversed:
+            if page.sortfunction is None:
+                return filter(page.onlyif, reversed(page.underlyingTable.value))
+            else:
+                return reversed(sorted(filter(page.onlyif, page.underlyingTable.value),
+                                       key=page.sortfunction))
+        else:
+            if page.sortfunction is None:
+                return filter(page.onlyif, page.underlyingTable.value)
+            else:
+                return sorted(filter(page.onlyif, page.underlyingTable.value),
+                              key=page.sortfunction)
+
+    finalTable = Thunk(choosefinaltable,[page.underlyingTable],page.button+'_finalTable')
     if page.hasDates:
         getSongDate = lambda song: song.date.isoformat()
         colourDateFunction = lambda song: classes.colourDate(song.date)
@@ -155,7 +159,7 @@ def makelistpage(page):
         page=page,
         getSongDate=getSongDate,
         links=where.actualLinks(page.button),
-        finalTable=finalTable,
+        finalTable=finalTable.value,
         colourDateFunction=colourDateFunction,
         bookNo=classes.bookNo,
         bookColour=config.bookColour,
@@ -164,7 +168,7 @@ def makelistpage(page):
         today=classes.today)
     return outputpage
 
-ListPageTemplate = Thunk(lambda :"ListPageTemplate.html",set(),'ListPageTemplate')
+ListPageTemplate = Thunk(lambda :"ListPageTemplate.html", [],'ListPageTemplate', info={'filesystem':"ListPageTemplate.html"})
 
 class ListPage(Saveable):
     def __init__(self,
@@ -276,7 +280,7 @@ for period in classes.datePeriods:
         usereversed=False,
         hasDates=False)})
 if None==3:
-    TestPageTemplate = Thunk(lambda :"test.html",set(),'TestPageTemplate')
+    TestPageTemplate = Thunk(lambda :"test.html", [],'TestPageTemplate', info={'filesystem':"test.html"})
     listPages.update({
         "Test":ListPage(button="Test",
                         template=TestPageTemplate.value,
@@ -305,7 +309,7 @@ Y8.   .8P   88   88    88 88.  ... 88           88        88.  .88 88.  .88 88. 
                                                                         .88                   
                                                                     d8888P                    
 """
-HomePageTemplate = Thunk(lambda:"HomePageTemplate.html",set(),"HomePageTemplate")
+HomePageTemplate = Thunk(lambda:"HomePageTemplate.html", [],"HomePageTemplate", info={'filesystem':"HomePageTemplate.html"})
 
 homePages = {button:Saveable(button, pagecontent)
              for button in ["Seedfield Songs","Home"]
@@ -336,15 +340,16 @@ homePages = {button:Saveable(button, pagecontent)
 
 missingSongPretendSongfiles = defaultdict(songlists.blankSongContent)
 
-SongSearchTemplate = Thunk(lambda :"SongSearchTemplate.html",set(),'SongSearchTemplate')
-SongTextHomepageTemplate = Thunk(lambda :"songtext.HomePageTemplate.html",set(),'SongTextHomepageTemplate')
+SongSearchTemplate = Thunk(lambda :"SongSearchTemplate.html", [],'SongSearchTemplate', info={'filesystem':"SongSearchTemplate.html"})
+SongTextHomepageTemplate = Thunk(lambda :"songtext.HomePageTemplate.html", [],'SongTextHomepageTemplate',
+                                 info={'filesystem':"songtext.HomePageTemplate.html"})
 
 songtextPages = {
     "Search":Saveable("Search",
              Thunk(lambda:apply_template(SongSearchTemplate.value, songlist=songlists.OKSongList.value,
                             songContents=songlists.SongContents.value, numberFromFileName=classes.numberFromFileName,
                             pagetitle="Search the full text of songs", bookColour=config.bookColour,
-                            bookNo=classes.bookNo),{SongSearchTemplate},"Search")),
+                            bookNo=classes.bookNo),{SongSearchTemplate},"Search",info={'slow':True})),
     "Song Text Home":Saveable("Song Text Home",
              Thunk(lambda:apply_template(SongTextHomepageTemplate.value,
                             links=where.actualLinks("Song Text Home"),
@@ -353,9 +358,10 @@ songtextPages = {
                             today=classes.today),{SongTextHomepageTemplate},'Song Text Home'))
 }
 
-MatchSongsTemplate = Thunk(lambda :"MatchSongsTemplate.html",set(),'MatchSongsTemplate')
-SongContentsTemplate = Thunk(lambda :"SongContentsTemplate.html",set(),'SongContentsTemplate')
-MatchSimilarSongnamesTemplate = Thunk(lambda :"MatchSimilarSongnamesTemplate.html",set(),'MatchSimilarSongnamesTemplate')
+MatchSongsTemplate = Thunk(lambda :"MatchSongsTemplate.html", [],'MatchSongsTemplate', info={'filesystem':"MatchSongsTemplate.html"})
+SongContentsTemplate = Thunk(lambda :"SongContentsTemplate.html", [],'SongContentsTemplate', info={'filesystem':"SongContentsTemplate.html"})
+MatchSimilarSongnamesTemplate = Thunk(lambda :"MatchSimilarSongnamesTemplate.html", [],'MatchSimilarSongnamesTemplate',
+                                      info={'filesystem':"MatchSimilarSongnamesTemplate.html"})
 
 privatePages = {
     "Missing":Saveable("Missing",

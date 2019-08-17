@@ -1,3 +1,16 @@
+# 1.3.0
+
+## Tell me what you changed and I'll recalculate your pages
+
+There's a second tab now where you say what changed in the filesystem and 
+the pages that you ask for back on the main pages will get recalculated
+based on what you said changed. 
+
+If you didn't say it changed, it won't recalculate. You could always quit 
+and start the program again if you can't be bothered with this.
+
+I find it handy for when I'm messing with a template etc.
+
 # 1.2.2
 
 ## Faster startup times, faster for simple pages

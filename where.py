@@ -56,7 +56,8 @@ linksOnHomepage = {"Date": "Date",
                    "Number": "No.",
                    "Most used": "All time",
                    "Non-SoF new": "Non-SoF new",
-                   "December songs": "December"}
+                   "December songs": "December",
+                   "Search the full text of all songs":"Search"}
 
 negateableButtons = ["New",
                "Date",

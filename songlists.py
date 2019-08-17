@@ -24,16 +24,16 @@ d8'   .8P 88.  .88 88    88 88.  .88     88     88 88.  ... 88.  .88 88 88.  .88
                              d8888P                         dP                                                                                  
 """
 
-def LoadSongReplacementsEtc():
-    from songreplacements import songreplacements,neverreplace
-    return songreplacements,neverreplace
+def LoadSongReplacements():
+    from songreplacements import songreplacements
+    return songreplacements
 
+def LoadNeverReplace():
+    from songreplacements import neverreplace
+    return neverreplace
 
-SongReplacementsAndNeverReplace = Thunk(LoadSongReplacementsEtc, set(), 'SongReplacementsEtc')
-SongReplacements = Thunk(lambda: SongReplacementsAndNeverReplace.value[0],
-                         [SongReplacementsAndNeverReplace], 'SongReplacements')
-NeverReplace = Thunk(lambda: SongReplacementsAndNeverReplace.value[1],
-                     [SongReplacementsAndNeverReplace], 'NeverReplace')
+SongReplacements = Thunk(LoadSongReplacements, [], 'SongReplacements', info={'filesystem':'songreplacements.py'})
+NeverReplace = Thunk(LoadNeverReplace, [], 'NeverReplace', info={'filesystem':'songreplacements.py'})
 
 def ReturnMaybeReplace():
     def maybereplacesong(song):
@@ -69,16 +69,19 @@ def rawSongsIn(pathtosongset):                                                  
        if sg.get("type") == "song":                    #only songs
            yield MaybeReplaceSong.value(sg.get("name"))            #yield is return but makes an iterator rather than a standard funtion
 
-NotSongs = Thunk(lambda: {song for song in rawSongsIn(config.notsongspath)}, [MaybeReplaceSong], name='NotSongs')
+NotSongs = Thunk(lambda: {song for song in rawSongsIn(config.notsongspath)}, [MaybeReplaceSong], name='NotSongs',
+                 info={'filesystem':config.notsongspath})
 
+OldSundaySetFilenames = Thunk(lambda :config.oldsetsglob,[],name='OldSundaySetFilenames',info={'filesystem':config.oldsetsglob})
+SundaySetFilenames = Thunk(lambda :config.newsetsglob,[],name='SundaySetFilenames',info={'filesystem':config.newsetsglob})
 
 def CalcSundayFileNames():
-    sundayFiles = glob.glob(config.oldsetsglob)
-    sundayFiles.extend(glob.glob(config.newsetsglob))
+    sundayFiles = glob.glob(OldSundaySetFilenames.value)
+    sundayFiles.extend(glob.glob(SundaySetFilenames.value))
     return sundayFiles
-SundayFileNames = Thunk(CalcSundayFileNames, set(), name='SundayFileNames')
+AllSundaySetFilenames = Thunk(CalcSundayFileNames, [OldSundaySetFilenames,SundaySetFilenames], name='AllSundaySetFilenames')
 
-SongFileNames = Thunk(lambda: glob.glob(config.songglob), set(), name='SongFileNames')
+SongFileNames = Thunk(lambda: glob.glob(config.songglob), [], name='SongFileNames', info={'filesystem':config.songglob})
 
 ActualSongFiles = Thunk(lambda:
                         [song for song in (os.path.basename(file)
@@ -121,7 +124,8 @@ def songsIn(pathtosongset):                                                     
            if name not in NotSongs.value:
                yield name            #yield is return but makes an iterator rather than a standard funtion
 
-NotNew = Thunk(lambda: {song for song in songsIn(config.notnewpath)}, [MaybeReplaceSong], name='NotNew')
+NotNew = Thunk(lambda: {song for song in songsIn(config.notnewpath)}, [MaybeReplaceSong], name='NotNew',
+               info={'filesystem':config.notnewpath})
 
 def CalculateSundaysAndSongs():
 
@@ -131,7 +135,7 @@ def CalculateSundaysAndSongs():
         songs[song]=[]
     used = set()
 
-    for file in SundayFileNames.value:
+    for file in AllSundaySetFilenames.value:
         sunday = classes.getdate(os.path.basename(file))            #get date from filename
         for song in songsIn(file):
             sundays[sunday].append(song)            #this sunday we sang this song
@@ -140,10 +144,11 @@ def CalculateSundaysAndSongs():
 
     return sundays, songs, used
 
-SundaysAndSongs = Thunk(CalculateSundaysAndSongs, [OKSongList], name='SundaysAndSongs')
-SundaySongs = Thunk(lambda: SundaysAndSongs.value[0], [SundaysAndSongs], name='SundaySongs')
-SongSundays = Thunk(lambda: SundaysAndSongs.value[1], [SundaysAndSongs], name='SongSundays')
-UsedSongs = Thunk(lambda: SundaysAndSongs.value[2], [SundaysAndSongs], name='UsedSongs')
+WhichSongsInWhichSundaySets = Thunk(CalculateSundaysAndSongs, [OKSongList, AllSundaySetFilenames], name='WhichSongsInWhichSundaySets',
+                                    info={'slow':True})
+SundaySongs = Thunk(lambda: WhichSongsInWhichSundaySets.value[0], [WhichSongsInWhichSundaySets], name='SundaySongs')
+SongSundays = Thunk(lambda: WhichSongsInWhichSundaySets.value[1], [WhichSongsInWhichSundaySets], name='SongSundays')
+UsedSongs = Thunk(lambda: WhichSongsInWhichSundaySets.value[2], [WhichSongsInWhichSundaySets], name='UsedSongs')
 
 # ____________________________________________________________________________________________________________________ #
 #                      PLain Song Lists                                                                                #
@@ -259,7 +264,7 @@ def CalculateSongContents():
         songContents[song]=classes.SongContent(song, song, "???\n<br>Sorry, no content.\n<br>???\n<br>If there were content for this song on disk,\n<br>it wouldn't be in this list!\n<br>???")
     return songContents
 
-SongContents = Thunk(CalculateSongContents, [SongFileNames, SongsWithoutSongFiles], name='SongContents')
+SongContents = Thunk(CalculateSongContents, [SongFileNames, SongsWithoutSongFiles], name='SongContents', info={'filesystem':config.songglob,'slow':True})
 
 
 # ____________________________________________________________________________________________________________________ #
@@ -287,7 +292,7 @@ def CalcMatches():
     # Matches from SongSets
     matches = defaultdict(blankMatch)
 
-    for file in SundayFileNames.value:
+    for file in AllSundaySetFilenames.value:
         root = ElementTree.parse(file).getroot()            #parse xml
         for sg in root.findall("slide_groups/slide_group"): #songs are slide groups
             if sg.get("type") == "song":                    #only
@@ -302,5 +307,5 @@ def CalcMatches():
                 if len(match.songfilenames) > 1]
 
 
-Matches = Thunk(CalcMatches, {}, name='Matches')
+Matches = Thunk(CalcMatches, [AllSundaySetFilenames, SongFileNames], name='Matches', info={'slow':True})
 

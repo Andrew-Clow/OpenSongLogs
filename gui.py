@@ -2,12 +2,17 @@
 
 import PySimpleGUI as sg
 
+
 import relativelocation
 import where
 import songlists
 from thunk import *
 
 justtesting=False
+# ______________________________________________________________________________________________________________________
+#                      Just testing                                                                                    .
+# ______________________________________________________________________________________________________________________
+
 if not justtesting:
     from weboutput import listPages, homePages, songtextPages, privatePages, saveAuxFiles
 else:
@@ -15,7 +20,7 @@ else:
     class S(object):
         def __init__(self,btn,pvt=False):
             self.button=btn
-            self.content=Thunk(lambda:'Content of {0} page'.format(btn),set(),btn)
+            self.content=Thunk(lambda:'Content of {0} page'.format(btn), set(), btn, info={'filesystem':btn+'_template.html'})
             self.private = pvt
             if '/' in btn:
                 (d,f) = btn.split('/')
@@ -42,6 +47,9 @@ else:
     # end of justtesting bit
 
 
+# ______________________________________________________________________________________________________________________
+#                      Tab 1                                                                                         .
+# ______________________________________________________________________________________________________________________
 
 
 (listpageButtons,homepageButtons,songtextPageButtons,privatePageButtons) = \
@@ -75,7 +83,7 @@ leftcol = [
 middlecol = [
     [sg.Text('Song Text pages')],
     [sg.Listbox(values=songtextPageButtons,
-                default_values=songtextPageButtons,
+                default_values=[],
                 select_mode=sg.LISTBOX_SELECT_MODE_MULTIPLE,
                 size=(25,len(songtextPageButtons)),
                 key='songtextPageButtons')],
@@ -83,7 +91,7 @@ middlecol = [
     [],
     [sg.Text('Private Pages')],
     [sg.Listbox(values=privatePageButtons,
-                default_values=privatePageButtons,
+                default_values=['Missing'],
                 select_mode=sg.LISTBOX_SELECT_MODE_MULTIPLE,
                 size=(25, len(privatePageButtons)),
                 key='privatePageButtons')],
@@ -94,13 +102,14 @@ def spacer(width,height=1):
     return sg.Text('',size=(width,height))
 
 rightcol = [
-    [sg.Button('Generate webpages')],
+    [sg.Button('Generate webpages'),
+     sg.Text("Visit the 'Tell me what you changed...' \n tab before pressing this button again.",text_color='red',key='warning',visible=False)],
     [sg.Multiline(default_text='',size=(100,20),key='printmsg',autoscroll=True)]
 ]
 
-layout = [
+tab1layout = [
     [sg.Frame('output to:',[[sg.Listbox(values=where.outputprefixes,
-                                        default_values=where.outputprefixes,
+                                        default_values=where.outputprefixes[0:1],
                                         key='customoutputprefixes',
                                         select_mode=sg.LISTBOX_SELECT_MODE_MULTIPLE,
                                         size=(max([len(loc) for loc in where.outputprefixes]),len(where.outputprefixes))
@@ -110,8 +119,40 @@ layout = [
     [spacer(1)]
 ]
 
+# ______________________________________________________________________________________________________________________
+#                      Tab 2                                                                                 .
+# ______________________________________________________________________________________________________________________
+
+
+#tab2layout = [[sg.T('Yo.')]]
+
+tablecontent = list(sorted([[thunk.name,thunk.info['filesystem']] for thunk in Thunk.Thunks if 'filesystem' in thunk.info]))
+list.sort(tablecontent,key=lambda row:row[1])
+tableheadings = ['Thing that changed','Files you may have changed                        ']
+
+tab2layout = [
+    [sg.Text('Select the things you changed:')],
+    [sg.Text('Hold down ctrl or shift to selct more than one thing.')],
+    [sg.Table(values=tablecontent, headings=tableheadings,
+              select_mode=sg.TABLE_SELECT_MODE_EXTENDED,vertical_scroll_only=True,row_height=20,
+                        auto_size_columns=True, justification='left', num_rows=len(tablecontent),
+              alternating_row_color='#f5f5f5', key='thunks')],
+    [sg.Button('Update')],
+    [spacer(1)]
+]
+
+# ______________________________________________________________________________________________________________________
+#                      Overall                                                                                 .
+# ______________________________________________________________________________________________________________________
+
+layout = [[sg.TabGroup([[sg.Tab(' Make website ', tab1layout), sg.Tab(' Tell me what you changed... ', tab2layout)]])]]
 
 window = sg.Window('OpenSongLogs', layout)
+
+# ______________________________________________________________________________________________________________________
+#                      Handling tab 1                                                                                 .
+# ______________________________________________________________________________________________________________________
+
 
 partmeanings = {
     'listpageButtons':listPages,
@@ -141,8 +182,25 @@ def savewith(values):
     printmsg('_'*100)
     printmsg('')
 
+# ______________________________________________________________________________________________________________________
+#                      Handling tab 2                                                                                 .
+# ______________________________________________________________________________________________________________________
 
-#window.Show()
+def updatethunks(indeces):
+    thunknames = set()
+    for i in indeces:
+        thunkname = tablecontent[i][0]
+        thunknames.add(thunkname)
+        yield thunkname
+    for thunk in Thunk.Thunks:
+        if thunk.name in thunknames:
+            thunk.unready_sinks()
+
+
+# ______________________________________________________________________________________________________________________
+#                      Main event loop                                                                                 .
+# ______________________________________________________________________________________________________________________
+
 songlists.CheckForMissingSongs()    # TODO: make this a GUI thing!
 while True:
     event, values = window.Read()
@@ -154,8 +212,14 @@ while True:
         window.Element(event[4:]).SetValue(buttonLists[event[4:]])
     elif event == 'Generate webpages':
         savewith(values)
-
-
+        window.Element('warning').Update(visible=True)
+    elif event == 'Update':
+        if values['thunks']:
+            window.Element('warning').Update(visible=False)
+            thunknames = updatethunks(values['thunks'])
+            sg.Popup('Updated:\n'+'\n'.join(thunknames)+'\n\nNow go back to the Make Website tab')
+        else:
+            sg.Popup('Please select at least one thing you changed first.')
 
 window.Close()
 
