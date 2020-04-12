@@ -7,7 +7,7 @@ OpenSong [http://www.opensong.org/](http://www.opensong.org/)
 to generate a website listing what song's you've used, when, and how often.
 
 You can hopefully see ours at 
-[http://seedfieldsongs.orgfree.com/](http://seedfieldsongs.orgfree.com/)
+[https://seedfieldsongs.orgfree.com/](https://seedfieldsongs.orgfree.com/)
 
 # Security
 
@@ -49,6 +49,8 @@ The program (`classes.py`) will need some editing if you use a different format.
 
 ## How to use it
 
+Run `gui.py`.
+
 There are two tabs - the first is so you say what you want generated. 
 I've chosen the stuff that might change each week as the default and 
 turned off the slowest to generate pages.
@@ -58,6 +60,16 @@ tell it what changed on disk and it'll recalculate those bits of the pages
 you ask for. (Sorry I haven't got it tracking changes 
 to thousands of files in a few directories, and I'm not sure it should.)
 Go back to the first tab when you're done in the second.
+
+Until I've separated `where.py` and `songreplacements.py` and `config.py` 
+out from the code, changes to these only take force when you recompile.
+In particular, telling the program you changed `SongReplacements` or
+`NeverReplace` isn't going to achieve anything, sorry, and you'll have to 
+recompile/run from code. 
+
+Note that it checks to see if it was going to change something in the webpages
+before writing them. That means you might find that nothing happens because 
+you didn't change anything.
 
 ## The python code
 

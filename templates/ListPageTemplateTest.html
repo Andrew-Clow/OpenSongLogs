@@ -6,7 +6,7 @@
 <meta http-equiv="Expires" content="86400"/>
 	<title>
 		<%block name="title">
-			Seedfield Songs sorted by ${page.button}
+			Seedfield Songs by ${page.button}
 			% if isBackwards(page.button):
 				(backwards)
 			% endif
@@ -21,10 +21,9 @@
        Ask me to update this if it's out of date!</p>
     <h3>Hints:</h3>
     <ul>
-		<li>Tap/click underlined stuff</li>
-		<li>Anything that lets you see the text of the song requires login to respect copyright. I can give you a login, but if I don't know you, it won't happen, sorry. There are other websites that provide song lyrics.</li>
-		<li>Your browser can search the songs by name - ctrl-F on windows, tap three dots and choose "find in page" on mobile</li>
-		<li>Check back at the <a href="index.html">homepage</a> for things I'm planning.</li>
+       <li>Tap/click underlined stuff</li>
+       <li>Your browser can search the songs by name - ctrl-F on windows, tap three dots and choose "find in page" on mobile</li>
+       <li>Check back at the <a href="index.html">homepage</a> for things I'm planning.</li>
     </ul>
         
 	<table id="songstable" cellpadding="3">
@@ -65,7 +64,7 @@
 			<td style="background-color:${colourDateFunction(song)}">${getSongDate(song)}</td>	
 			<td style="background-color:${bookColour[bookNo(song.songnumber)]}" class="number" >${bookNo(song.songnumber)}</td>	
 			<td style="background-color:${bookColour[bookNo(song.songnumber)]}" class="number" >${song.songnumber}</td>	
-			<td class="songname"><a href="${songlocationforhref(song.songfilename)}" target="_blank">${song.songtitle}</a></td>
+			<td class="songname">${song.songtitle}</td>
 			% for periodName in recentDates.keys():
 				<td class="number" 
 				    style="background-color:${colourFrequency(periodName,song.recentTimes)}">

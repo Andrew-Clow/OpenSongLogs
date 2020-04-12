@@ -1,5 +1,8 @@
 # Copyright 2019 Andrew Clow GPLv3 (see COPYING.txt)
 
+# This is where all the worker classes go.
+# There's not supposed to be any actual data here at all.
+
 import datetime as DT
 import re
 import xml.etree.ElementTree as ElementTree
@@ -234,6 +237,7 @@ def hasNumber(asongname):
     return hasNumberRE.match(asongname)
 
 
+
 # A SongContent is just a filename, a songname and some lyrics.
 class SongContent(object):
     def __init__(self, file, songname="", lyrics=""):
@@ -247,7 +251,7 @@ class SongContent(object):
             self.lyrics = root.findtext("lyrics")
             if self.lyrics is None:
                 self.lyrics = ""
-            self.lyrics = re.sub("\n[.;][^\n]*", "", self.lyrics).replace("||", "\n").replace("\n", "\n<br>")
+            self.lyrics = re.sub("\n[.;][^\n]*", "", "\n"+self.lyrics).replace("||", "\n").replace("|", "\n").replace("\n", "\n<br>").replace("_", "")
         else:
             self.lyrics = lyrics
 
@@ -294,7 +298,7 @@ partRE = re.compile("^\[(.*)\]")
 notlyricsRE = re.compile("^[.;]|^\s*$")
 
 
-def glarblyrics(lyrics):
+def lyricsStructure(lyrics):
     bit = ""
     verses = defaultdict(list)
     lyrics = lyrics.replace("||", "\n&nbsp;\n").replace("|", "\n")
@@ -336,7 +340,7 @@ class SongFile(object):
         if not self.lyrics:
             return None
         else:
-            return glarblyrics(self.lyrics)
+            return lyricsStructure(self.lyrics)
 
 
 flatten = lambda l: [item for sublist in l for item in sublist]

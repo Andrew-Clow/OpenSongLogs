@@ -1,15 +1,23 @@
 # Copyright 2019 Andrew Clow GPLv3 (see COPYING.txt)
 
+# This module specifies where the webpages that are generated will end up.
+# It also specifies what webpage buttons go to which webpages in the navigation and the gui.
+
 import re
 from relativelocation import *
 import config
 
-outputprefixes =["./www/","D:/Andrew/Documents/Dropbox/Not work/Sundays/SeedfieldSongs - sortable lists of songs we've sung/"]
+outputprefixes =["./www/","D:/Andrew/Documents/Dropbox/Not work/Church/Sundays/SeedfieldSongs - sortable lists of songs we've sung/"]
 privateprefixes = ["./wwwlocal/"]
 makotemplates = "./templates"
 makomodules = "./mako_modules"
 
 songtextsubdir = 'songtext/'
+songssubdir = songtextsubdir + 'songs/'
+def songlocation(song):
+    return (RelativeLocation(songssubdir,song+".html"))
+def songlocationforhref(song):
+    return (songlocation(song).within(''))
 
 publicAuxFilesNeeded = {
     songtextsubdir: [
@@ -50,13 +58,13 @@ a88aaaa8P' dP    dP d8888P d8888P .d8888b. 88d888b. .d8888b.
 
 """
 
-linksOnHomepage = {"Date": "Date",
-                   "Song": "Song",
+linksOnHomepage = {"Most used": "four years",
+                   "Date": "Date",
                    "New": "New",
-                   "Number": "No.",
-                   "Most used": "All time",
                    "Non-SoF new": "Non-SoF new",
                    "December songs": "December",
+                   "Song": "Song",
+                   "Number": "No.",
                    "Search the full text of all songs":"Search"}
 
 negateableButtons = ["New",
@@ -80,12 +88,13 @@ for button in negateableButtons:
 
 buttonLocations.update({
     "Home":             RelativeLocation("", "index.html"),
-    "Seedfield Songs":  RelativeLocation("", "1SeedfieldSongs.html"),
+#    "Seedfield Songs":  RelativeLocation("", "1SeedfieldSongs.html"),
     "Non-SoF new":      RelativeLocation("","by_Non-SoF_new.html"),
     "December":         RelativeLocation("","by_December.html"),
     "Test":             RelativeLocation("","test.html"),
     "Song Text Home":   RelativeLocation(songtextsubdir, "index.html"),
     "Search":           RelativeLocation(songtextsubdir, "SongSearch.html"),
+    "Individual Song Pages":RelativeLocation(songssubdir,"(lots of individual files)") # stub value just to fix my silly class hierarchy
 })
 publicButtons = buttonLocations.keys()
 

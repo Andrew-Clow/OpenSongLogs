@@ -20,7 +20,9 @@
 <body>
 	<div class="topbit row">
 		<h1>${title()}</h1>
-		<p>To show just some songs in the list, <span class='searchbox'>type in the box</span> and <span class='searchbox completed'>tap/click update</span>.
+		<p>To show just some songs in the list,
+			<span class='searchbox'>type in the box</span> and
+			<span class='searchbox completed'>tap/click update</span>. &lt;<a href="index.html">Back.</a>&gt;</p>
 	</div>
 	<div class="undertopbit row">
 		<div class="search row">
@@ -53,7 +55,6 @@
 						class="number" >${bookNo(numberFromFileName(song))}</td>	
 					<td class="tosong" 
 							onclick="toggletooltip(this);
-								 	 selectElementText(this);
 								 	 clearOrCopySecondInto(this,'songtext','tooltipyes');"
 							>${songContents[song].songname}<span
 							 	class="hidden">
@@ -66,8 +67,7 @@
 			</table>
 		  </div>
 		  <div	id="songtext" 
-		  		class="right col scroll-y"
-		  		onclick="selectFullElementText(this);">
+		  		class="right col scroll-y">
 		  	<span class="faint">(Song text will appear here when you tap or click a song.)</span>
 		  </div>
 		</div>

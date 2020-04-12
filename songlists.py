@@ -1,5 +1,8 @@
 # Copyright 2019 Andrew Clow GPLv3 (see COPYING.txt)
 
+# Almost all of the data ends up in one of these lists.
+# Try to keep everything to be a thunk. See thunk.py.
+
 import glob
 import xml.etree.ElementTree as ElementTree
 from collections import defaultdict
@@ -264,7 +267,8 @@ def CalculateSongContents():
         songContents[song]=classes.SongContent(song, song, "???\n<br>Sorry, no content.\n<br>???\n<br>If there were content for this song on disk,\n<br>it wouldn't be in this list!\n<br>???")
     return songContents
 
-SongContents = Thunk(CalculateSongContents, [SongFileNames, SongsWithoutSongFiles], name='SongContents', info={'filesystem':config.songglob,'slow':True})
+SongContents = Thunk(CalculateSongContents, [SongFileNames, SongsWithoutSongFiles],
+                     name='SongContents', info={'filesystem':config.songglob,'slow':True})
 
 
 # ____________________________________________________________________________________________________________________ #

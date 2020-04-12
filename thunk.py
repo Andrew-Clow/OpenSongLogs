@@ -1,3 +1,10 @@
+# Copyright 2019 Andrew Clow GPLv3 (see COPYING.txt)
+
+# A thunk is a blob of data that may or may not have been calculated yet (ready).
+# The idea is that if you ask it for its value and it hasn't been calculated, it'll calculate itself.
+# You can tell a thunk to recalculate itself (you updated something on disk),
+# and it'll recalculate its sources and tell it's listeners (sinks) that they're not ready.
+
 import timeit
 
 debug = 2
@@ -12,7 +19,7 @@ class Thunk(object):
         self.__value = None
         self.sinks = []                     # list of thunks that use this one for propogating change downstream
         self.name = name
-        self.info = info if info else {} # dictionary of info for whatever purpose you like - {'file':'template.html','slow':True} for example
+        self.info = info if info else {} # dictionary of info for whatever purpose you like, eg {'file':'template.html','slow':True}
         if debug >= 3:
             print("{0} is sourcing:".format(self.name))
         for source in sources:

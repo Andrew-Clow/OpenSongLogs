@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
+<meta name="robots" content="nofollow"/>
 <meta http-equiv="Expires" content="86400"/>	
 
 	
@@ -17,10 +18,10 @@
     <h1>${title()}</h1>
   
     <h2>What's here</h2>
-	<p>You can now see <span class="new">song text</span>, including <b>full text search</b> for if you can only remember the
-		end of the third verse, but you need to log in. Ask me for a username and password if you don't have one.</p>
     <p>You can see the songs we've sung by Date, by Song name or by when the song was New, just click on the links below:</p>
-        
+	<p>There's now <b>full text search</b> for if you can only remember the
+		end of the third verse, but you need to log in. Ask me for a username and password if you don't have one.</p>
+
 			<%def name="headerLink(text,href)">
 
 				<a href="${href}"><span class="clickable big">
@@ -38,11 +39,14 @@
 	
 	<h2>What's planned</h2>
 	<ul>
-		<li>Allow you to click a song title anywhere to see the song text when you've logged in.</li>
+		<li>This now generally works as I'd like. Please let me know if I can provide another option.</li>
+		<li>Perhaps sort in-page rather than by loading another page.</li>
+		<li>Some efficiencies at the backend.</li>
 	</ul>
 
 	<h2>What's done now</h2>
 	<ul>
+		<li>You can now click a song title anywhere to see the song text when you've logged in. To respect copyright, I'm not publishing song text openly on the internet, so I'm afraid I'll only supply a login to people I know, sorry. There are plenty of other websites supplying song lyrics out there.</li>
 		<li>Full text song search is available! Ask me for a login.</li>
 		<li>Put the book number next to the song number</li>
 		<li>There's now a list of new songs that aren't in Songs of Fellowship.</li>

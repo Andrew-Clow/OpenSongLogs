@@ -1,5 +1,10 @@
 # Copyright 2019 Andrew Clow GPLv3 (see COPYING.txt)
 
+# The gui was created to allow me to specify a subset of the website to regenerate,
+# but I had intended that it could go a second time when you tell it which things you'd changed,
+# for example if you updated a template, it would be nice to not have to re-parse all the original data.
+# Sadly it's not working fully effectively like that yet, but works for some things. Give it a go.
+
 import PySimpleGUI as sg
 
 
@@ -14,7 +19,7 @@ justtesting=False
 # ______________________________________________________________________________________________________________________
 
 if not justtesting:
-    from weboutput import listPages, homePages, songtextPages, privatePages, saveAuxFiles
+    from weboutput import individualSongPages, listPages, homePages, songtextPages, privatePages, saveAuxFiles
 else:
     # importing that stuff is very very slow at the moment. This bit is for justtesting the gui
     class S(object):
@@ -39,6 +44,7 @@ else:
     homePages = {'Home':S('Home'),'SFS':S('SFS')}
     songtextPages = {'songtext/SongSearch':S('songtext/SongSearch'),'songtext/index':S('songtext/index')}
     privatePages = {'SongMatch':S('SongMatch',True),'SongComparison':S('SongComparison',True),'SongCompare':S('SongCompare',True)}
+    individualSongPages = {'Individual Song Pages':S('lots of song pages')}
 
     def saveAuxFiles(outputprefixes):
         if outputprefixes == outputprefixes:
@@ -52,14 +58,15 @@ else:
 # ______________________________________________________________________________________________________________________
 
 
-(listpageButtons,homepageButtons,songtextPageButtons,privatePageButtons) = \
-     ([s.button for s in somepages.values()] for somepages in (listPages, homePages, songtextPages, privatePages))
+(individualSongPageButtons,listpageButtons,homepageButtons,songtextPageButtons,privatePageButtons) = \
+     ([s.button for s in somepages.values()] for somepages in (individualSongPages, listPages, homePages, songtextPages, privatePages))
 
 buttonLists = {
     'listpageButtons':listpageButtons,
     'homepageButtons':homepageButtons,
     'songtextPageButtons':songtextPageButtons,
-    'privatePageButtons':privatePageButtons
+    'privatePageButtons':privatePageButtons,
+    'individualSongPageButtons': individualSongPageButtons
 }
 
 leftcol = [
@@ -96,6 +103,14 @@ middlecol = [
                 size=(25, len(privatePageButtons)),
                 key='privatePageButtons')],
     [sg.Button('Clear', key='Clear:privatePageButtons'),sg.Button('All',key='All:privatePageButtons')],
+    [],
+    [sg.Text('Individual Song Pages')],
+    [sg.Listbox(values=individualSongPageButtons,
+                default_values=[],
+                select_mode=sg.LISTBOX_SELECT_MODE_MULTIPLE,
+                size=(25, len(individualSongPageButtons)),
+                key='individualSongPageButtons')],
+    [sg.Button('Clear', key='Clear:individualSongPageButtons'), sg.Button('All', key='All:individualSongPageButtons')],
 
 ]
 def spacer(width,height=1):
@@ -155,6 +170,7 @@ window = sg.Window('OpenSongLogs', layout)
 
 
 partmeanings = {
+    'individualSongPageButtons':individualSongPages,
     'listpageButtons':listPages,
     'songtextPageButtons':songtextPages,
     'privatePageButtons':privatePages,
@@ -181,6 +197,7 @@ def savewith(values):
     printmsg('Done.')
     printmsg('_'*100)
     printmsg('')
+    print('_'*100)
 
 # ______________________________________________________________________________________________________________________
 #                      Handling tab 2                                                                                 .

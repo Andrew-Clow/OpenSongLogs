@@ -1,3 +1,28 @@
+# 1.4.0 
+
+## Individual Song Pages and check before rewriting
+
+* Now the program generates a web page for each song in the SongContents list.
+  There are links through from list pages. 
+  I've yet to see how annoying that is when you're not signed in 
+  and there's all these links you can't follow.
+  Disadvantage: My ftp client dies after about 360 small transfers 
+  and misses a lot of them out.
+* Everything that's written using the SaveAs function in weboutput.py 
+  is checked against the disk and if nothing's changed, nothing happens.
+  This is the right thing to do to reduce upload traffic, 
+  but may alarm you if you were expecting it to recalculate and it didn't.
+* The pages sorting by how frequently songs have been sung now omit songs 
+  that haven't been sung at all. 
+  I intended it to exclude songs that haven't been sung within that 
+  particular time period, but it's not worked out that way.
+
+
+## 1.3.1 Bugfixes and tidy up of webpages
+
+* Links between the homepage and song search pages.
+* The entire song doesn't select any more when you click anywhere.
+
 # 1.3.0
 
 ## Tell me what you changed and I'll recalculate your pages

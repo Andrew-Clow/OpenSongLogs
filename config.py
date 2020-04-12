@@ -1,5 +1,7 @@
 # Copyright 2019 Andrew Clow GPLv3 (see COPYING.txt)
 
+# This is the config file for where the input data is. See where.py for where the output goes.
+
 # regex for finding assignment to function parameter that has a default value:
 # def \w+\(.*(\w)+.*\):(.*\n)*.* \1 =
 # assignment to a function parameter is a big mistake. function parameters that have a default value are implicitly static in python!
@@ -8,7 +10,7 @@
 
 # __________ Input _________
 
-inputprefix = "../../../Dropbox/Not work/Church Laptop Open Song Files/"
+inputprefix = "../../../Dropbox/Not work/Church/Church Laptop Open Song Files/"
 setpattern = "20*"
 oldsetsglob = inputprefix + "sets2/" + setpattern
 newsetsglob = inputprefix + "sets/" + setpattern
@@ -20,8 +22,9 @@ includeAllSongsInSongHistoryTable = True
 # __________ Dates _________
 
 recentDays = {"three months":92,
-              "six months":182.625,
-              "year":365.25}
+#             "six months":182.625,
+              "year":365.25,
+	      "four years":1461}
 
 includeAllTimeInRecents = "All time"  # put emptystring if you don't want it
 

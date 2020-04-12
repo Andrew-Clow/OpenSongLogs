@@ -1,3 +1,6 @@
+# Superceded by gui.py
+# Don't use.
+
 from weboutput import (www,wwwlocal,saveAuxFiles)
 
 def main():

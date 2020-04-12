@@ -1,4 +1,7 @@
 # Copyright 2019 Andrew Clow GPLv3 (see COPYING.txt)
+
+# Where the songlists.py and the mako templates meet to generate the output in places as specified by the where.py module.
+
 from collections import defaultdict
 from mako.lookup import TemplateLookup
 
@@ -22,25 +25,35 @@ mylookup = TemplateLookup(directories=[where.makotemplates],
 # We use higher powers to emphasise that period above others in the sort order
 
 powerDictDict = {"three months":
-                     {"three months": 7,
-                      "six months": 5,
-                      "year": 3,
+                     {"three months": 8,
+                      "six months": 6,
+                      "year": 4,
+                      "four years": 2,
                       "All time": 0},
                  "six months":
-                     {"three months": 5,
-                      "six months": 7,
-                      "year": 3,
+                     {"three months": 6,
+                      "six months": 8,
+                      "year": 4,
+                      "four years": 2,
                       "All time": 0},
                  "year":
-                     {"three months": 3,
-                      "six months": 5,
-                      "year": 7,
+                     {"three months": 4,
+                      "six months": 6,
+                      "year": 8,
+                      "four years": 2,
+                      "All time": 0},
+                 "four years":
+                     {"three months": 2,
+                      "six months": 4,
+                      "year": 6,
+                      "four years": 8,
                       "All time": 0},
                  "All time":
                      {"three months": 0,
                       "six months": 2,
                       "year": 4,
-                      "All time": 6}
+                      "four years": 6,
+                      "All time": 8}
                  }
 
 def sortFunctionFromPeriod(period):
@@ -80,18 +93,21 @@ d8'   .8P 88.  .88 88 .88'  88.  ... 88.  .88 88.  .88 88 88.  ...
  Y88888P  `88888P8 8888P'   `88888P' `88888P8 88Y8888' dP `88888P' 
                                                                    
 """
-def saveAs(output, location,customoutputprefixes = None):  # Save in all the outputprefixes locations
+def saveAs(output, location, customoutputprefixes = None):  # Save in all the outputprefixes locations
     myoutputprefixes = customoutputprefixes or where.outputprefixes
     for outputprefix in myoutputprefixes:
-        with open(location.within(outputprefix), "w", encoding="utf-8") as f:
-            print(output, file=f)
-#        yield(outputprefix)
-        # print('Saved {0} in {1}'.format(location.filename,location.within("")))
+        with open(location.within(outputprefix), "r+b") as f:
+            current = f.read()
+            if current != output.encode('utf-8'):           # Test that it's genuinely a new version first.
+                f.seek(0)
+                f.write(output.encode('utf-8'))
+                f.truncate()
 
 
 def apply_template(templatename, **kwargs):
     mytemplate = mylookup.get_template(templatename)
     return mytemplate.render(**kwargs)
+
 
 
 class Saveable(object):
@@ -112,6 +128,50 @@ class Saveable(object):
         if self.private:
             myoutputprefixes = where.privateprefixes
         saveAs(self.contents.value,self.location,myoutputprefixes)
+
+
+# ______________________________________________________________________________________________________________________
+#                         List Pages                                                                                   .
+# ______________________________________________________________________________________________________________________
+
+"""
+.d88888b                                 888888ba                                      
+88.    "'                                88    `8b                                     
+`Y88888b. .d8888b. 88d888b. .d8888b.    a88aaaa8P' .d8888b. .d8888b. .d8888b. .d8888b. 
+      `8b 88'  `88 88'  `88 88'  `88     88        88'  `88 88'  `88 88ooood8 Y8ooooo. 
+d8'   .8P 88.  .88 88    88 88.  .88     88        88.  .88 88.  .88 88.  ...       88 
+ Y88888P  `88888P' dP    dP `8888P88     dP        `88888P8 `8888P88 `88888P' `88888P' 
+                                 .88                             .88                   
+                             d8888P                          d8888P                    
+"""
+# The first type of Saveable page is a song page.
+# It's atypical in that it doesn't have a presence in the site navigation,
+# so it overrides some default methods of the Saveable class, sorry.
+
+# BROKEN. :(
+
+SongTemplate = Thunk(lambda:"SongTemplate.html", [],"SongTemplate", info={'filesystem':"SongTemplate.html"})
+
+class SaveableSongPages(Saveable):
+    def __init__(self):
+        self.contents = songlists.SongContents
+        super().__init__("Individual Song Pages", self.contents)
+
+    def save(self,customoutputprefixes=None):
+        myoutputprefixes = customoutputprefixes or where.outputprefixes
+        actualSongContents = self.contents.value
+        for s in actualSongContents:
+            output = apply_template(SongTemplate.value,
+                                    song = actualSongContents[s],
+                                    bookNo=classes.bookNo,
+                                    bookColour=config.bookColour,
+                                    numberFromFileName=classes.numberFromFileName
+            )
+            saveAs(output,where.songlocation(s),myoutputprefixes)
+
+individualSongPages = {'Individual Song Pages':SaveableSongPages()}
+
+
 
 # ______________________________________________________________________________________________________________________
 #                         List Pages                                                                                   .
@@ -165,7 +225,8 @@ def makelistpage(page):
         bookColour=config.bookColour,
         isBackwards=where.isBackwards,
         colourFrequency=classes.colourFrequency,
-        today=classes.today)
+        today=classes.today,
+        songlocationforhref=where.songlocationforhref)
     return outputpage
 
 ListPageTemplate = Thunk(lambda :"ListPageTemplate.html", [],'ListPageTemplate', info={'filesystem':"ListPageTemplate.html"})
@@ -271,12 +332,16 @@ for period in classes.datePeriods:
             button=period,
             underlyingTable=songlists.AllSongsTable,
             sortfunction=sortFunctionFromPeriod(period),
+            onlyif=lambda song: song.recentTimes[period].number > 0,
+            # BUG: I intended this to exclude songs not sung in that time period,
+            # but it just excludes songs that haven't been sung at all.
             usereversed=True,
             hasDates=False),
     '-'+period:ListPage(
         button='-'+period,
         underlyingTable=songlists.AllSongsTable,
         sortfunction=sortFunctionFromPeriod(period),
+        onlyif=lambda song: song.recentTimes[period].number > 0, # BUG as above.
         usereversed=False,
         hasDates=False)})
 if None==3:
@@ -289,7 +354,6 @@ if None==3:
                         usereversed=True,
                         hasDates=True)
     })
-
 
 #
 #
@@ -312,7 +376,7 @@ Y8.   .8P   88   88    88 88.  ... 88           88        88.  .88 88.  .88 88. 
 HomePageTemplate = Thunk(lambda:"HomePageTemplate.html", [],"HomePageTemplate", info={'filesystem':"HomePageTemplate.html"})
 
 homePages = {button:Saveable(button, pagecontent)
-             for button in ["Seedfield Songs","Home"]
+             for button in ["Home"] #["Seedfield Songs","Home"]
              for pagecontent in [Thunk(lambda:apply_template(HomePageTemplate.value,
                                                 links=where.actualLinks("Home"),
                                                 linksOnHomepage=where.linksOnHomepage,
@@ -346,12 +410,12 @@ SongTextHomepageTemplate = Thunk(lambda :"songtext.HomePageTemplate.html", [],'S
 
 songtextPages = {
     "Search":Saveable("Search",
-             Thunk(lambda:apply_template(SongSearchTemplate.value, songlist=songlists.OKSongList.value,
+                      Thunk(lambda:apply_template(SongSearchTemplate.value, songlist=songlists.OKSongList.value,
                             songContents=songlists.SongContents.value, numberFromFileName=classes.numberFromFileName,
                             pagetitle="Search the full text of songs", bookColour=config.bookColour,
                             bookNo=classes.bookNo),{SongSearchTemplate},"Search",info={'slow':True})),
     "Song Text Home":Saveable("Song Text Home",
-             Thunk(lambda:apply_template(SongTextHomepageTemplate.value,
+                              Thunk(lambda:apply_template(SongTextHomepageTemplate.value,
                             links=where.actualLinks("Song Text Home"),
                             linksOnHomepage={"Search the text of all songs":"Search",
                                              "Main Home Page":"Home"},
@@ -365,48 +429,48 @@ MatchSimilarSongnamesTemplate = Thunk(lambda :"MatchSimilarSongnamesTemplate.htm
 
 privatePages = {
     "Missing":Saveable("Missing",
-             Thunk(lambda :apply_template(MatchSongsTemplate.value,
+                       Thunk(lambda :apply_template(MatchSongsTemplate.value,
                             fromsongs=songlists.SongsWithoutSongFiles.value,
                             tosongs=songlists.OKSongList.value,
                             songContents=dict(songlists.SongContents.value,
                                               **missingSongPretendSongfiles),
                             pagetitle="Missing songs: match up with actual songs and add to songreplacements.py"),
                    {MatchSongsTemplate},'Missing'),
-             private=True),
+                       private=True),
 
     "Numbered":Saveable("Numbered",
-             Thunk(lambda :apply_template(SongContentsTemplate.value,
+                        Thunk(lambda :apply_template(SongContentsTemplate.value,
                             songlist=songlists.SongsWithNumbers.value,
                             songContents=songlists.SongContents.value,
                             pagetitle="Song Content for all songs with numbers",
                             alter=lambda song: '"' + song + '",'),{SongContentsTemplate},'Numbered'),
-             private=True),
+                        private=True),
     "Numberless":Saveable("Numberless",
-             Thunk(lambda:apply_template(SongContentsTemplate.value,
+                          Thunk(lambda:apply_template(SongContentsTemplate.value,
                             songlist=songlists.SongListFromSetsWithoutNumbers.value,
                             songContents=songlists.SongContents.value,
                             pagetitle="Songs without numbers we've used",
                             alter=lambda song: '"' + song + '":'),{SongContentsTemplate},'Numberless'),
-             private=True),
+                          private=True),
     "Match Unnumbered":Saveable("Match Unnumbered",
-             Thunk(lambda :apply_template(MatchSongsTemplate.value,
+                                Thunk(lambda :apply_template(MatchSongsTemplate.value,
                             fromsongs=songlists.SongListFromSetsWithoutNumbers.value,
                             tosongs=songlists.SongsWithNumbers.value,
                             songContents=songlists.SongContents.value,
                             pagetitle="Match up unnumbered songs"),{MatchSongsTemplate},'Match Unnumbered'),
-             private=True),
+                                private=True),
     "Undealt With":Saveable("Undealt With",
-             Thunk(lambda :apply_template(MatchSongsTemplate.value,
+                            Thunk(lambda :apply_template(MatchSongsTemplate.value,
                             fromsongs=songlists.SongsUndealtWithWithoutNumbers.value,
                             tosongs=songlists.SongsWithNumbers.value,
                             songContents=songlists.SongContents.value,
                             pagetitle="Match up undealt with unnumbered songs"),{MatchSongsTemplate},'Undealt With'),
-             private=True),
+                            private=True),
     "Match Similar Songnames":Saveable("Match Similar Songnames",
-             Thunk(lambda :apply_template("MatchSimilarSongnamesTemplate.html",
+                                       Thunk(lambda :apply_template("MatchSimilarSongnamesTemplate.html",
                             maybematches=songlists.Matches.value,
                             pagetitle="Match songs with similar Songnames"),{MatchSimilarSongnamesTemplate},'Match Similar Songnames'),
-             private=True)
+                                       private=True)
 }
 
 

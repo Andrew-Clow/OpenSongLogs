@@ -1,6 +1,7 @@
 # Copyright 2019 Andrew Clow GPLv3 (see COPYING.txt)
 
 songreplacements = {
+    "Love the Lord your God with all your heart": "2965 Love the Lord Your God with all your heart",
     "0042' You are my vision": "0042 Be Thou my vision",
     "1387 Jesus is lord": "1387 Jesus is lord - the cry that eachoes",
     "2231  Bless the Lord O my Soul;": "2231 Bless the Lord O my Soul",
@@ -1202,7 +1203,6 @@ songreplacements = {
     "Unto You, O Lord": "0562 Unto You, O Lord",
     "Visit us, O Lord, with Your awesome presence": "1070 Visit us, O Lord, with Your awesome presence",
     "Waiting for Your Spirit": "1071 Waiting for Your Spirit",
-    "Wake up O sleeper": "1073 Wake up, wake up O sleeper",
     "Wake up, my soul": "1072 Wake up, my soul",
     "Wake up, wake up O sleeper": "1073 Wake up, wake up O sleeper",
     "Wash me clean in that cool river": "1074 Wash me clean in that cool river",
