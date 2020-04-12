@@ -1,0 +1,25 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="robots" content="noindex, nofollow"/>
+<meta http-equiv="Expires" content="86400"/>
+	<title>
+		${song.songname}
+	</title>
+	<link rel="stylesheet" href="../../songlists.css">
+	
+</head>
+<body>
+    <h1>
+    % if song.hasNumber():
+		<span style="background-color:${bookColour[bookNo(numberFromFileName(song.songname))]}"
+						class="number" >${bookNo(numberFromFileName(song.songname))}</span>
+	% endif
+    ${song.songname}</h1>
+	<div>
+		${song.lyrics}
+	</div>
+
+</body>
+</html>
