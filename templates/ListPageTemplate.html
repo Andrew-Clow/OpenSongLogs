@@ -13,9 +13,33 @@
 		</%block>
 	</title>
 	<link rel="stylesheet" href="songlists.css">
-	
+
+	<script src="https://kit.fontawesome.com/c6131de82f.js" crossorigin="anonymous"></script>
 </head>
+
+			<%def name="headerLink(text,href,icon)">
+
+				<span>
+
+					<span class="icon">
+						<a href="${href}"><i class="fas fa-${icon}"></i></a>
+					</span>
+
+					<span class="clickable big">
+						<a href="${href}">${text}</a>
+					</span>
+
+				</span>
+
+			</%def>
+
+
+
 <body>
+	<div class="header">
+		${headerLink("Home",links["Home"],"home")}
+		${headerLink("Search",links["Search"],"search")}
+	</div>
     <h1>${title()}</h1>
     <p>Created on <strong>${today.isoformat()}</strong>.
        Ask me to update this if it's out of date!</p>

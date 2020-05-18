@@ -1,0 +1,6 @@
+% for song in songs:
+    % if hasNumber(song):
+Redirect /song/${numberFromFileName(song)} "/songtext/songs/${song}.html"
+    % endif
+% endfor
+RedirectMatch "^/song/(.*)" "/songtext/songs/$1.html"

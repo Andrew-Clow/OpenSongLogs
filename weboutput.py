@@ -169,8 +169,28 @@ class SaveableSongPages(Saveable):
             )
             saveAs(output,where.songlocation(s),myoutputprefixes)
 
-individualSongPages = {'Individual Song Pages':SaveableSongPages()}
 
+RedirectTemplate = Thunk(lambda:"roothtaccess.txt", [],"RedirectTemplate", info={'filesystem':"roothtaccess.txt"})
+
+class SaveableRedirects(Saveable):
+    def __init__(self):
+        self.contents = songlists.SongsWithNumbers
+        super().__init__("Redirects", self.contents)
+
+    def save(self,customoutputprefixes=None):
+        myoutputprefixes = customoutputprefixes or where.outputprefixes
+        actualSongContents = self.contents.value
+        output = apply_template(RedirectTemplate.value,
+                                    songs = actualSongContents,
+                                    hasNumber = classes.hasNumber,
+                                    numberFromFileName=classes.numberFromFileName
+        )
+        saveAs(output,where.roothtaccess,myoutputprefixes)
+
+#redirects = {'Redirects for eg /sof/1346':SaveableRedirects()}
+
+individualSongPages = {'Individual Song Pages':SaveableSongPages(),
+                       'Redirects':SaveableRedirects()}
 
 
 # ______________________________________________________________________________________________________________________
@@ -380,6 +400,8 @@ homePages = {button:Saveable(button, pagecontent)
              for pagecontent in [Thunk(lambda:apply_template(HomePageTemplate.value,
                                                 links=where.actualLinks("Home"),
                                                 linksOnHomepage=where.linksOnHomepage,
+                                                iconsOnHomepage=where.iconsOnHomepage,
+                                                longSearchLinkText = where.longSearchLinkText,
                                                 today=classes.today),{HomePageTemplate},button)]}
 
 
@@ -413,12 +435,15 @@ songtextPages = {
                       Thunk(lambda:apply_template(SongSearchTemplate.value, songlist=songlists.OKSongList.value,
                             songContents=songlists.SongContents.value, numberFromFileName=classes.numberFromFileName,
                             pagetitle="Search the full text of songs", bookColour=config.bookColour,
+                            links=where.actualLinks("Search"),
                             bookNo=classes.bookNo),{SongSearchTemplate},"Search",info={'slow':True})),
     "Song Text Home":Saveable("Song Text Home",
                               Thunk(lambda:apply_template(SongTextHomepageTemplate.value,
                             links=where.actualLinks("Song Text Home"),
-                            linksOnHomepage={"Search the text of all songs":"Search",
+                            linksOnHomepage={where.longSearchLinkText:"Search",
                                              "Main Home Page":"Home"},
+                            iconsOnHomepage=where.iconsOnHomepage,
+
                             today=classes.today),{SongTextHomepageTemplate},'Song Text Home'))
 }
 

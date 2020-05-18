@@ -5,7 +5,6 @@
 <meta name="robots" content="nofollow"/>
 <meta http-equiv="Expires" content="86400"/>	
 
-	
 	<title>
 		<%block name="title">
 			Seedfield Songs
@@ -13,24 +12,40 @@
 	</title>
 	<link rel="stylesheet" href="songlists.css">
 	
+	<script src="https://kit.fontawesome.com/c6131de82f.js" crossorigin="anonymous"></script>
 </head>
+
+			<%def name="headerLink(text,href,icon)">
+
+				<span>
+
+					<span class="icon">
+						<a href="${href}"><i class="fas fa-${icon}"></i></a>
+					</span>
+
+					<span class="clickable big">
+						<a href="${href}">${text}</a>
+					</span>
+
+				</span>
+
+			</%def>
+
+
+
 <body>
+	<div class="header">
+		${headerLink("Home",links["Home"],"home")}
+		${headerLink("Search",links["Search"],"search")}
+	</div>
     <h1>${title()}</h1>
   
-    <h2>What's here</h2>
-    <p>You can see the songs we've sung by Date, by Song name or by when the song was New, just click on the links below:</p>
-	<p>There's now <b>full text search</b> for if you can only remember the
-		end of the third verse, but you need to log in. Ask me for a username and password if you don't have one.</p>
-
-			<%def name="headerLink(text,href)">
-
-				<a href="${href}"><span class="clickable big">
-									${text}
-								  </span></a>&nbsp;
-			</%def>
+			<div class="twocolumn">
 			% for linktext in linksOnHomepage.keys():
-				${headerLink(linktext,links[linksOnHomepage[linktext]])}
+				${headerLink(linktext,links[linksOnHomepage[linktext]],iconsOnHomepage[linktext])}
 			% endfor
+				<span>You need to log in to see the text of songs. Ask Andrew for a password.</span>
+			</div>
 	
 	<p>When you see a number under "In the last", if you move your mouse over it or tap it, you'll get a list of when it's been used. The pages are quite slow to load because there's a lots of data on each page.</p>
 
@@ -39,13 +54,18 @@
 	
 	<h2>What's planned</h2>
 	<ul>
+		<li>Make links on the song search page to the individual songs.</li>
+		<li>Make a just-this-last-year page for quick loading reference</li>
 		<li>This now generally works as I'd like. Please let me know if I can provide another option.</li>
 		<li>Perhaps sort in-page rather than by loading another page.</li>
+
 		<li>Some efficiencies at the backend.</li>
 	</ul>
 
 	<h2>What's done now</h2>
 	<ul>
+		<li>You can now type /song/1346 instead of /songtext/songs/1346 In Christ Alone.html and it'll get you there.</li>
+	 	<li>Home and Seach buttons on all the main pages</li>
 		<li>You can now click a song title anywhere to see the song text when you've logged in. To respect copyright, I'm not publishing song text openly on the internet, so I'm afraid I'll only supply a login to people I know, sorry. There are plenty of other websites supplying song lyrics out there.</li>
 		<li>Full text song search is available! Ask me for a login.</li>
 		<li>Put the book number next to the song number</li>

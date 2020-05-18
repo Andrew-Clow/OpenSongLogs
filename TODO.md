@@ -1,5 +1,13 @@
 # Todo
 
+Features:
+
+* Put these things on the homepage
+* Make links on the song search page to the individual songs.
+* Make a just-this-last-year page for quick loading reference
+
+Internals:
+
 * Move config and where and songreplacements into external data files 
   so that it can be a standalone executable. This is currently a bug
   because editing songreplacements.py doesn't recompile the code on the 

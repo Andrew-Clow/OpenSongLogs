@@ -28,7 +28,7 @@ publicAuxFilesNeeded = {
     ],
     "": [
         "jquery-3.4.1.js",
-        "songlists.css"
+        "songlists.css",
     ]
 }
 privateAuxFilesNeeded = {
@@ -42,6 +42,7 @@ privateAuxFilesNeeded = {
 
 publicAuxLocations = directories2locations(publicAuxFilesNeeded)
 privateAuxLocations = directories2locations(privateAuxFilesNeeded)
+roothtaccess = RelativeLocation("","htaccess.txt")   # short urls for /sof/2643 Rename to .htaccess once you upload it.
 
 # ______________________________________________________________________________________________________________________
 #                       Buttons and Filenames
@@ -58,14 +59,26 @@ a88aaaa8P' dP    dP d8888P d8888P .d8888b. 88d888b. .d8888b.
 
 """
 
-linksOnHomepage = {"Most used": "four years",
-                   "Date": "Date",
-                   "New": "New",
-                   "Non-SoF new": "Non-SoF new",
-                   "December songs": "December",
-                   "Song": "Song",
-                   "Number": "No.",
-                   "Search the full text of all songs":"Search"}
+longSearchLinkText = "Search the full text of all songs"
+
+linksOnHomepage = {"Most sung songs": "four years",
+                   "Songs in date order": "Date",
+                   "New songs": "New",
+                   "New songs not in Songs of Fellowship": "Non-SoF new",
+                   "Songs in name order": "Song",
+                   "Songs in number order": "No.",
+                   "Songs from December": "December",
+                   longSearchLinkText:"Search"}
+
+iconsOnHomepage = {"Most sung songs": "chart-bar",
+                   "Songs in date order": "calendar-alt",
+                   "New songs": "star",
+                   "New songs not in Songs of Fellowship": "sun",
+                   "Songs in name order": "sort-alpha-down",
+                   "Songs in number order": "sort-numeric-down",
+                   "Songs from December": "holly-berry",
+                   longSearchLinkText:"search",
+                   "Main Home Page":"home"}
 
 negateableButtons = ["New",
                "Date",
@@ -94,7 +107,9 @@ buttonLocations.update({
     "Test":             RelativeLocation("","test.html"),
     "Song Text Home":   RelativeLocation(songtextsubdir, "index.html"),
     "Search":           RelativeLocation(songtextsubdir, "SongSearch.html"),
-    "Individual Song Pages":RelativeLocation(songssubdir,"(lots of individual files)") # stub value just to fix my silly class hierarchy
+    "Individual Song Pages":RelativeLocation(songssubdir,"(lots of individual files)"), # stub value just to fix my silly class hierarchy
+    "Redirects": RelativeLocation("", "htaccess.txt"),
+
 })
 publicButtons = buttonLocations.keys()
 

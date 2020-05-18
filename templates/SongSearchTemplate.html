@@ -16,13 +16,39 @@
       type="image/png" 
       href="favicon.ico">
 	
+	<script src="https://kit.fontawesome.com/c6131de82f.js" crossorigin="anonymous"></script>
 </head>
+
+			<%def name="headerLink(text,href,icon)">
+
+				<span>
+
+					<span class="icon">
+						<a href="${href}"><i class="fas fa-${icon}"></i></a>
+					</span>
+
+					<span class="clickable big">
+						<a href="${href}">${text}</a>
+					</span>
+
+				</span>
+
+			</%def>
+
+
 <body>
+
 	<div class="topbit row">
+		<div class="header">
+			${headerLink("Home",links["Home"],"home")}
+			${headerLink("Search",links["Search"],"search")}
+		</div>
 		<h1>${title()}</h1>
 		<p>To show just some songs in the list,
 			<span class='searchbox'>type in the box</span> and
 			<span class='searchbox completed'>tap/click update</span>. &lt;<a href="index.html">Back.</a>&gt;</p>
+	</div>
+
 	</div>
 	<div class="undertopbit row">
 		<div class="search row">

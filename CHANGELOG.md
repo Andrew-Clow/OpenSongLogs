@@ -1,3 +1,13 @@
+# 1.5.0
+
+## Short urls, search and home buttons, icons
+
+* There's a Search link and home button on all main pages.
+* For songs with numbers you can type /song/1346 instead of /songtext/songs/1346 In Christ Alone and it'll redirect.
+* In fact it'll redirect  /song/Awesome God  to  /songtext/songs/Awesome God.html  too. 
+* Fontawesome icons
+
+
 # 1.4.0 
 
 ## Individual Song Pages and check before rewriting

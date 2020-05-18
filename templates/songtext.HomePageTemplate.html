@@ -12,21 +12,39 @@
 	</title>
 	<link rel="stylesheet" href="../songlists.css">
 	
+	<script src="https://kit.fontawesome.com/c6131de82f.js" crossorigin="anonymous"></script>
 </head>
+
+			<%def name="headerLink(text,href,icon)">
+
+				<span>
+
+					<span class="icon">
+						<a href="${href}"><i class="fas fa-${icon}"></i></a>
+					</span>
+
+					<span class="clickable big">
+						<a href="${href}">${text}</a>
+					</span>
+
+				</span>
+
+			</%def>
+
+
+
 <body>
+	<div class="header">
+		${headerLink("Home",links["Home"],"home")}
+		${headerLink("Search",links["Search"],"search")}
+	</div>
     <h1>${title()}</h1>
   
     <h2>What's here</h2>
     <p>Here are a few pages featuring song lyrics that I've found useful.</p>
         
-			<%def name="headerLink(text,href)">
-
-				<a href="${href}"><span class="clickable big">
-									${text}
-								  </span></a>&nbsp;
-			</%def>
 			% for linktext in linksOnHomepage.keys():
-				${headerLink(linktext,links[linksOnHomepage[linktext]])}
+				${headerLink(linktext,links[linksOnHomepage[linktext]],iconsOnHomepage[linktext])}
 			% endfor
 	
 	<p>The pages are quite slow to load because there's a lots of data on each page.</p>
